@@ -1,6 +1,8 @@
 #ifndef _SSI_H_
 #define _SSI_H_
 
+#include <stdint.h>
+
 enum SSI_MODULE {
     SSI0,
     SSI1,
