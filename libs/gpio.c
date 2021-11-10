@@ -3,7 +3,7 @@
 #include"gpio.h"
 #include "tm4c123gh6pm.h"
 
-static struct GPIO_PORT {
+struct GPIO_PORT {
     volatile uint32_t *DATA;
     volatile uint32_t *DIR;
     volatile uint32_t *IS;
