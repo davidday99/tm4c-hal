@@ -31,7 +31,7 @@ def parse_file_base_name(fpath):
 
 
 def generate_header_guards(base_name):
-    header_guard_open = '_' + base_name + '_H_'
+    header_guard_open = '_' + base_name.upper() + '_H_'
     header_guard_close = '/* ' + header_guard_open + ' */'
     return [f'#ifndef {header_guard_open}\n#define {header_guard_open}',
             f'#endif {header_guard_close}']
