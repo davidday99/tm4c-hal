@@ -3,6 +3,13 @@
 
 #include <stdint.h>
 
+enum SSI_MODULE {
+    SSI0,
+    SSI1,
+    SSI2,
+    SSI3,
+};
+
 void init_SSICR1(enum SSI_MODULE module, uint8_t mode);
 void set_SSICR1SSE_high(enum SSI_MODULE module);
 void set_SSICR1SSE_low(enum SSI_MODULE module);
