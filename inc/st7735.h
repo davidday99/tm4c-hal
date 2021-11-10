@@ -56,10 +56,10 @@
 
 // some flags for ST7735_InitR()
 enum initRFlags{
-  none,
-  INITR_GREENTAB,
-  INITR_REDTAB,
-  INITR_BLACKTAB
+    none,
+    INITR_GREENTAB,
+    INITR_REDTAB,
+    INITR_BLACKTAB
 };
 
 
@@ -172,4 +172,4 @@ void Output_Init(void);
 
 void ST7735_OutChar(char ch);
 
-#endif
+#endif /* _ST7735H_ */

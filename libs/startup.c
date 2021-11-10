@@ -193,33 +193,33 @@ const vector_table_t vectors[] = {
 void Reset_Handler(void)
 {
 
-  int *src, *dest;
+    int *src, *dest;
 
-  /* copying of the .data values into RAM */
+    /* copying of the .data values into RAM */
 
-  src = &_etext;
-  for (dest = &_data; dest < &_edata;)
-  {
+    src = &_etext;
+    for (dest = &_data; dest < &_edata;)
+    {
     *dest++ = *src++;
-  }
+    }
 
-  /* initializing .bss values to zero*/
+    /* initializing .bss values to zero*/
 
-  for (dest = &_bss; dest < &_ebss;)
-  {
+    for (dest = &_bss; dest < &_ebss;)
+    {
     *dest++ = 0;
-  }
+    }
 
-  /* your program's main() called */
-  main();
+    /* your program's main() called */
+    main();
 }
 
 void Default_Handler(void)
 {
-  while (1)
-  {
+    while (1)
+    {
     //does literally nothing except infinitely loop
-  }
+    }
 }
 
 /*****************************************END OF FILE*********************************************/

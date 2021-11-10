@@ -2,22 +2,22 @@
 #define _GPIO_H_
 
 enum PORT {
-  PORTA,
-  PORTB,
-  PORTC,
-  PORTD,
-  PORTF
+    PORTA,
+    PORTB,
+    PORTC,
+    PORTD,
+    PORTF
 };
 
 enum PIN {
-  PIN0,
-  PIN1,
-  PIN2,
-  PIN3,
-  PIN4,
-  PIN5,
-  PIN6,
-  PIN7
+    PIN0,
+    PIN1,
+    PIN2,
+    PIN3,
+    PIN4,
+    PIN5,
+    PIN6,
+    PIN7
 };
 
 void enable_port_clock(enum PORT port);

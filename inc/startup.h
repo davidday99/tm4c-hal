@@ -30,6 +30,11 @@
  * Defines a macro DEFAULT that aliases the function prototype
  * to Default_Handler if the function is not defined
 */
+
+#ifndef _STARTUP_H_
+#define _STARTUP_H_
+
+
 #define DEFAULT __attribute__((weak, alias("Default_Handler")))
 
 /* Defines a type for the ISR's in the vector table */
@@ -166,3 +171,5 @@ extern int _bss;
 extern int _ebss;
 
 /***************************************** END OF FILE *******************************************/
+
+#endif /* _STARTUP_H_ */
