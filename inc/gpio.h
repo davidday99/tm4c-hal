@@ -20,17 +20,19 @@ enum PIN {
     PIN7
 };
 
-void enable_port_clock(enum PORT port);
-void enable_pin_as_input(enum PORT port, enum PIN pin);
-void enable_pin_as_output(enum PORT port, enum PIN pin);
-void enable_pin_as_af(enum PORT port, enum PIN pin);
-void enable_pin_as_gpio(enum PORT port, enum PIN pin);
-void set_pin_drive_strength_2mA(enum PORT port, enum PIN pin);
-void set_pin_drive_strength_4mA(enum PORT port, enum PIN pin);
-void set_pin_drive_strength_8mA(enum PORT port, enum PIN pin);
-void enable_pin_digital(enum PORT port, enum PIN pin);
-void enable_pin_analog(enum PORT port, enum PIN pin);
-void set_gpio_output_pin_high(enum PORT port, enum PIN pin);
-void set_gpio_output_pin_low(enum PORT port, enum PIN pin);
+void init_gpio_pin_DIR(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_AFSEL(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_DR2R(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_DR4R(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_DR8R(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_PUR(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_PDR(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_DEN(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_LOCK(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_CR(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_AMSEL(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_PCTL(enum PORT port, enum PIN pin, uint8_t value);
+uint8_t read_gpio_pin_DATA(enum PORT port, enum PIN pin);
+void set_gpio_pin_DATA(enum PORT port, enum PIN pin, uint8_t value);
 
 #endif /* _GPIO_H_ */

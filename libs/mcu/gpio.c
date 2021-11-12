@@ -62,58 +62,71 @@ static struct GPIO_PORT PORTS[] = {
     &GPIO_PORTF_LOCK_R, &GPIO_PORTF_CR_R, &GPIO_PORTF_AMSEL_R, &GPIO_PORTF_PCTL_R, &GPIO_PORTF_ADCCTL_R, &GPIO_PORTF_DMACTL_R},
 };
 
-void enable_port_clock(enum PORT port) {
-    SYSCTL_RCGCGPIO_R |= 1 << port;
+void init_gpio_pin_DIR(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].DIR) = (*(PORTS[port].DIR) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void enable_pin_as_input(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DIR) &= ~(1 << pin);
+void init_gpio_pin_AFSEL(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].AFSEL) = (*(PORTS[port].AFSEL) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void enable_pin_as_output(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DIR) |= 1 << pin;
+void init_gpio_pin_DR2R(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].DR2R) = (*(PORTS[port].DR2R) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void enable_pin_as_af(enum PORT port, enum PIN pin) {
-    *(PORTS[port].AFSEL) |= 1 << pin;
+void init_gpio_pin_DR4R(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].DR4R) = (*(PORTS[port].DR4R) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void enable_pin_as_gpio(enum PORT port, enum PIN pin) {
-    *(PORTS[port].AFSEL) &= ~(1 << pin);
+void init_gpio_pin_DR8R(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].DR8R) = (*(PORTS[port].DR8R) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void set_pin_drive_strength_2mA(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DR2R) |= 1 << pin;
-    *(PORTS[port].DR4R) &= ~(1 << pin);
-    *(PORTS[port].DR8R) &= ~(1 << pin);
+void init_gpio_pin_PUR(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].PUR) = (*(PORTS[port].PUR) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void set_pin_drive_strength_4mA(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DR2R) &= ~(1 << pin);
-    *(PORTS[port].DR4R) |= 1 << pin;
-    *(PORTS[port].DR8R) &= ~(1 << pin);
-    }
-
-void set_pin_drive_strength_8mA(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DR2R) &= ~(1 << pin);
-    *(PORTS[port].DR4R) &= ~(1 << pin);
-    *(PORTS[port].DR8R) |= 1 << pin;
+void init_gpio_pin_PDR(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].PDR) = (*(PORTS[port].PDR) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void enable_pin_digital(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DEN) |= 1 << pin;
-    *(PORTS[port].AMSEL) &= ~(1 << pin);
+void init_gpio_pin_DEN(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].DEN) = (*(PORTS[port].DEN) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void enable_pin_analog(enum PORT port, enum PIN pin) {
-    *(PORTS[port].AMSEL) |= 1 << pin;
-    *(PORTS[port].DEN) &= ~(1 << pin);
+void init_gpio_pin_LOCK(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].LOCK) = (*(PORTS[port].LOCK) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void set_gpio_output_pin_high(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DATA) |= 1 << pin;
+void init_gpio_pin_CR(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].CR) = (*(PORTS[port].CR) & ~(1 << pin)) |
+                            (value << pin);
 }
 
-void set_gpio_output_pin_low(enum PORT port, enum PIN pin) {
-    *(PORTS[port].DATA) &= ~(1 << pin);
+void init_gpio_pin_AMSEL(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].AMSEL) = (*(PORTS[port].AMSEL) & ~(1 << pin)) |
+                            (value << pin);
+}
+
+void init_gpio_pin_PCTL(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].PCTL) = (*(PORTS[port].PCTL) & ~(1 << pin)) |
+                            (value << pin);
+}
+
+uint8_t read_gpio_pin_DATA(enum PORT port, enum PIN pin) {
+    return *(PORTS[port].DATA) & (1 << pin);
+}
+
+void set_gpio_pin_DATA(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].DATA) = (*(PORTS[port].DATA) & (1 << pin)) |
+                            (value << pin);
 }
