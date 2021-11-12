@@ -46,7 +46,7 @@ struct SSI SSI_3 = {
 void init_ssi_mode(struct SSI *ssi, uint8_t clock_rate, uint8_t clock_phase,
                     uint8_t clock_polarity, uint8_t protocol, uint8_t data_size) {
     init_SSICR0(ssi->module, clock_rate, clock_phase,
-                clock_polarity, protocol, data_size);
+                clock_polarity, protocol, data_size - 1);
 }
 
 void init_ssi_clock_prescale_divider(struct SSI *ssi, uint8_t prescale_div) {
