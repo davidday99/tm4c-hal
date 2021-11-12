@@ -27,4 +27,10 @@ enum SSI_MODULE {
     SSI3,
 };
 
+struct GPIO_PIN{
+    enum PORT port;
+    enum PIN pin;
+};
+
+
 #endif /* _COMMON_H_ */

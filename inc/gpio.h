@@ -3,11 +3,6 @@
 
 #include "common.h"
 
-struct GPIO_PIN{
-    enum PORT port;
-    enum PIN pin;
-};
-
 void init_gpio_pin_DIR(enum PORT port, enum PIN pin, uint8_t value);
 void init_gpio_pin_AFSEL(enum PORT port, enum PIN pin, uint8_t value);
 void init_gpio_pin_DR2R(enum PORT port, enum PIN pin, uint8_t value);
