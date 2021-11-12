@@ -63,9 +63,9 @@ void init_SSICC(enum SSI_MODULE module, uint8_t cs) {
     *(SSI[module].SSICC) |= cs;
 }
 
-void init_SSICPSR(enum SSI_MODULE module, uint8_t cs) {
+void init_SSICPSR(enum SSI_MODULE module, uint8_t psdvsr) {
     *(SSI[module].SSICPSR) &= ~SSI_CPSR_CPSDVSR_M;
-    *(SSI[module].SSICC) |= cs;
+    *(SSI[module].SSICPSR) |= psdvsr;
 }
 
 uint16_t read_SSIDR(enum SSI_MODULE module) {
