@@ -1,5 +1,6 @@
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
+#include "gpio.h"
 
 enum SSI_MODULE {
     SSI0,
@@ -23,8 +24,17 @@ struct SSI {
 };
 
 static struct SSI SSI[] = {
-    {&SSI0_CR0_R, &SSI0_CR1_R, &SSI0_DR_R},
-    {&SSI1_CR0_R, &SSI1_CR1_R, &SSI1_DR_R},
+    {&SSI0_CR0_R, &SSI0_CR1_R, &SSI0_DR_R, &SSI0_SR_R, &SSI0_CPSR_R, &SSI0_IM_R,
+    &SSI0_RIS_R, &SSI0_MIS_R, &SSI0_ICR_R, &SSI0_DMACTL_R, &SSI0_CC_R},
+
+    {&SSI1_CR0_R, &SSI1_CR1_R, &SSI1_DR_R, &SSI1_SR_R, &SSI1_CPSR_R, &SSI1_IM_R,
+    &SSI1_RIS_R, &SSI1_MIS_R, &SSI1_ICR_R, &SSI1_DMACTL_R, &SSI1_CC_R},
+
+    {&SSI2_CR0_R, &SSI2_CR1_R, &SSI2_DR_R, &SSI2_SR_R, &SSI2_CPSR_R, &SSI2_IM_R,
+    &SSI2_RIS_R, &SSI2_MIS_R, &SSI2_ICR_R, &SSI2_DMACTL_R, &SSI2_CC_R},
+
+    {&SSI3_CR0_R, &SSI3_CR1_R, &SSI3_DR_R, &SSI3_SR_R, &SSI3_CPSR_R, &SSI3_IM_R,
+    &SSI3_RIS_R, &SSI3_MIS_R, &SSI3_ICR_R, &SSI3_DMACTL_R, &SSI3_CC_R}
 };
 
 void init_SSICR0(enum SSI_MODULE module, uint8_t scr,
