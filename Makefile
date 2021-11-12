@@ -53,7 +53,7 @@ MKDIR   = @mkdir -p $(@D) #creates folders if not present
 
 
 #GCC FLAGS
-CFLAGS = -ggdb -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
+CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
 CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c    
 
 #LINKER FLAGS
