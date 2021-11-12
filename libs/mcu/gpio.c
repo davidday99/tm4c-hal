@@ -1,5 +1,4 @@
 #include <stdint.h>
-
 #include"gpio.h"
 #include "tm4c123gh6pm.h"
 #include "common.h"
@@ -103,9 +102,12 @@ void init_gpio_pin_DEN(enum PORT port, enum PIN pin, uint8_t value) {
                             (value << pin);
 }
 
-void init_gpio_pin_LOCK(enum PORT port, enum PIN pin, uint8_t value) {
-    *(PORTS[port].LOCK) = (*(PORTS[port].LOCK) & ~(1 << pin)) |
-                            (value << pin);
+void unlock_gpio_port(enum PORT port) {
+    *(PORTS[port].LOCK) = GPIO_LOCK_KEY;
+}
+
+void lock_gpio_port(enum PORT port) {
+    *(PORTS[port].LOCK) = 0;
 }
 
 void init_gpio_pin_CR(enum PORT port, enum PIN pin, uint8_t value) {
