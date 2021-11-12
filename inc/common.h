@@ -20,4 +20,11 @@ enum PIN {
     PIN7
 };
 
+enum SSI_MODULE {
+    SSI0,
+    SSI1,
+    SSI2,
+    SSI3,
+};
+
 #endif /* _COMMON_H_ */

@@ -2,14 +2,11 @@
 #define _SSI_H_
 
 #include <stdint.h>
+#include "common.h"
 
-enum SSI_MODULE {
-    SSI0,
-    SSI1,
-    SSI2,
-    SSI3,
-};
-
+void init_SSICR0(enum SSI_MODULE module, uint8_t scr,
+                    uint8_t sph, uint8_t spo,
+                    uint8_t frf, uint8_t dss);
 void init_SSICR1(enum SSI_MODULE module, uint8_t mode);
 void set_SSICR1SSE_high(enum SSI_MODULE module);
 void set_SSICR1SSE_low(enum SSI_MODULE module);
