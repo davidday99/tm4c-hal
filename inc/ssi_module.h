@@ -6,10 +6,10 @@
 
 struct SSI {
     enum SSI_MODULE module;
-    struct GPIO_PIN tx;
-    struct GPIO_PIN rx;
-    struct GPIO_PIN fss;
-    struct GPIO_PIN clk;
+    struct GPIO_PIN *tx;
+    struct GPIO_PIN *rx;
+    struct GPIO_PIN *fss;
+    struct GPIO_PIN *clk;
 };
 
 extern struct SSI SSI_0;
