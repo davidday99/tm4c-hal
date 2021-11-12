@@ -92,6 +92,7 @@
 #include <stdint.h>
 #include "st7735.h"
 #include "tm4c123gh6pm.h"
+#include "ssi_module.h"
 
 // 16 rows (0 to 15) and 21 characters (0 to 20)
 // Requires (11 + size*size*6*8) bytes of transmission for each character
@@ -728,29 +729,10 @@ void static commonInit(const uint8_t *cmdList) {
     Delay1ms(500);
 
     // initialize SSI0
-    GPIO_PORTA_AFSEL_R |= 0x2C;           // enable alt funct on PA2,3,5
-    GPIO_PORTA_DEN_R |= 0x2C;             // enable digital I/O on PA2,3,5
-                                        // configure PA2,3,5 as SSI
-    GPIO_PORTA_PCTL_R = (GPIO_PORTA_PCTL_R&0xFF0F00FF)+0x00202200;
-    GPIO_PORTA_AMSEL_R &= ~0x2C;          // disable analog functionality on PA2,3,5
-    SSI0_CR1_R &= ~SSI_CR1_SSE;           // disable SSI
-    SSI0_CR1_R &= ~SSI_CR1_MS;            // master mode
-                                        // configure for system clock/PLL baud clock source
-    SSI0_CC_R = (SSI0_CC_R&~SSI_CC_CS_M)+SSI_CC_CS_SYSPLL;
-    //                                        // clock divider for 3.125 MHz SSIClk (50 MHz PIOSC/16)
-    //  SSI0_CPSR_R = (SSI0_CPSR_R&~SSI_CPSR_CPSDVSR_M)+16;
-                                        // clock divider for 8 MHz SSIClk (80 MHz PLL/24)
-                                        // SysClk/(CPSDVSR*(1+SCR))
-                                        // 80/(10*(1+0)) = 8 MHz (slower than 4 MHz)
-    SSI0_CPSR_R = (SSI0_CPSR_R&~SSI_CPSR_CPSDVSR_M)+10; // must be even number
-    SSI0_CR0_R &= ~(SSI_CR0_SCR_M |       // SCR = 0 (8 Mbps data rate)
-                    SSI_CR0_SPH |         // SPH = 0
-                    SSI_CR0_SPO);         // SPO = 0
-                                        // FRF = Freescale format
-    SSI0_CR0_R = (SSI0_CR0_R&~SSI_CR0_FRF_M)+SSI_CR0_FRF_MOTO;
-                                        // DSS = 8-bit data
-    SSI0_CR0_R = (SSI0_CR0_R&~SSI_CR0_DSS_M)+SSI_CR0_DSS_8;
-    SSI0_CR1_R |= SSI_CR1_SSE;            // enable SSI
+    init_ssi(&SSI_0);
+    init_ssi_clock_prescale_divider(&SSI_0, 10);
+    init_ssi_mode(&SSI_0, 0, 0, 0, 0, 7);
+    enable_ssi(&SSI_0);
 
     if(cmdList) commandList(cmdList);
 }
