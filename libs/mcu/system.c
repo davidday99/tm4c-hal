@@ -16,3 +16,9 @@ void PLL_init(void) {
         ;
     SYSCTL_RCC2_R &= ~SYSCTL_RCC2_BYPASS2;
 }
+
+
+void set_RCGCGPIO(uint8_t bit, uint8_t value) {
+    SYSCTL_RCGCGPIO_R = (SYSCTL_RCGCGPIO_R & ~(1 << bit)) |
+                            (value << bit);
+}
