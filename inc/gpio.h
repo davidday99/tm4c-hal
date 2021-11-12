@@ -19,7 +19,7 @@ void init_gpio_pin_DEN(enum PORT port, enum PIN pin, uint8_t value);
 void init_gpio_pin_LOCK(enum PORT port, enum PIN pin, uint8_t value);
 void init_gpio_pin_CR(enum PORT port, enum PIN pin, uint8_t value);
 void init_gpio_pin_AMSEL(enum PORT port, enum PIN pin, uint8_t value);
-void init_gpio_pin_PCTL(enum PORT port, enum PIN pin, uint8_t value);
+void init_gpio_pin_PCTL(enum PORT port, enum PIN pin, uint32_t value);
 uint8_t read_gpio_pin_DATA(enum PORT port, enum PIN pin);
 void set_gpio_pin_DATA(enum PORT port, enum PIN pin, uint8_t value);
 

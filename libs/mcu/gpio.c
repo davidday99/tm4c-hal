@@ -118,9 +118,9 @@ void init_gpio_pin_AMSEL(enum PORT port, enum PIN pin, uint8_t value) {
                             (value << pin);
 }
 
-void init_gpio_pin_PCTL(enum PORT port, enum PIN pin, uint8_t value) {
-    *(PORTS[port].PCTL) = (*(PORTS[port].PCTL) & ~(1 << pin)) |
-                            (value << pin);
+void init_gpio_pin_PCTL(enum PORT port, enum PIN pin, uint32_t value) {
+    uint8_t shift = pin * 4;
+    *(PORTS[port].PCTL) = (*(PORTS[port].PCTL) & ~(0xF << shift)) | value;
 }
 
 uint8_t read_gpio_pin_DATA(enum PORT port, enum PIN pin) {
