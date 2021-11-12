@@ -1,23 +1,11 @@
 #ifndef _GPIO_H_
 #define _GPIO_H_
 
-enum PORT {
-    PORTA,
-    PORTB,
-    PORTC,
-    PORTD,
-    PORTF
-};
+#include "common.h"
 
-enum PIN {
-    PIN0,
-    PIN1,
-    PIN2,
-    PIN3,
-    PIN4,
-    PIN5,
-    PIN6,
-    PIN7
+struct GPIO_PIN{
+    enum PORT port;
+    enum PIN pin;
 };
 
 void init_gpio_pin_DIR(enum PORT port, enum PIN pin, uint8_t value);

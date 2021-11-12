@@ -1,13 +1,6 @@
 #include "tm4c123gh6pm.h"
 #include <stdint.h>
-#include "gpio.h"
-
-enum SSI_MODULE {
-    SSI0,
-    SSI1,
-    SSI2,
-    SSI3,
-};
+#include "ssi.h"
 
 struct SSI {
     volatile uint32_t *SSICR0;
@@ -52,8 +45,8 @@ void init_SSICR0(enum SSI_MODULE module, uint8_t scr,
 }
 
 void init_SSICR1(enum SSI_MODULE module, uint8_t mode) {
-    *(SSI[module].SSICR1) &= ~SSI_CR1_MS;
     *(SSI[module].SSICR1) &= ~SSI_CR1_SSE;
+    *(SSI[module].SSICR1) &= ~SSI_CR1_MS;
     *(SSI[module].SSICR1) |= mode;
 }
 

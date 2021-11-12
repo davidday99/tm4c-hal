@@ -1,7 +1,10 @@
 #ifndef SYSTEM_H
 #define SYSTEM_H
 
+#include <stdint.h>
+#include "common.h"
+
 void PLL_init(void);
-void set_RCGCGPIO(uint8_t bit, uint8_t value);
+void set_RCGCGPIO(enum PORT port, uint8_t value);
 
 #endif /* SYSTEM_H */
