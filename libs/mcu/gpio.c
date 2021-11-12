@@ -2,6 +2,7 @@
 
 #include"gpio.h"
 #include "tm4c123gh6pm.h"
+#include "common.h"
 
 struct GPIO_PORT {
     volatile uint32_t *DATA;
