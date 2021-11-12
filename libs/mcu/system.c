@@ -1,4 +1,5 @@
 #include "tm4c123gh6pm.h"
+#include "system.h"
 
 void PLL_init(void) {
     SYSCTL_RCC2_R |= SYSCTL_RCC2_USERCC2;
@@ -18,7 +19,7 @@ void PLL_init(void) {
 }
 
 
-void set_RCGCGPIO(uint8_t bit, uint8_t value) {
-    SYSCTL_RCGCGPIO_R = (SYSCTL_RCGCGPIO_R & ~(1 << bit)) |
-                            (value << bit);
+void set_RCGCGPIO(enum PORT port, uint8_t value) {
+    SYSCTL_RCGCGPIO_R = (SYSCTL_RCGCGPIO_R & ~(1 << port)) |
+                            (value << port);
 }
