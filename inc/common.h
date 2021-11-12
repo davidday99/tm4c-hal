@@ -6,6 +6,7 @@ enum PORT {
     PORTB,
     PORTC,
     PORTD,
+    PORTE,
     PORTF
 };
 
