@@ -74,6 +74,6 @@ void write_SSIDR(enum SSI_MODULE module, uint16_t data) {
     *(SSI[module].SSIDR) = data;
 }
 
-void SSI_isbusy(enum SSI_MODULE module) {
+uint8_t SSI_isbusy(enum SSI_MODULE module) {
     return (*(SSI[module].SSIDR) & SSI_SR_TNF) == 0;
 }

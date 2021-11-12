@@ -27,7 +27,7 @@ PROJECT = main
 DEV = /dev/ttyACM0
 # SRCS: all source files from src directory
 SRCS = $(wildcard src/*.c) \
-	  $(wildcard libs/*.c) \
+	  $(wildcard libs/**/*.c) \
 	  $(wildcard asm/*.s)
 OBJ = obj/
 # OBJS: list of object files
@@ -73,12 +73,12 @@ $(OBJ)%.o: src/%.c               #turns .c source files into object files
 	$(MKDIR)              
 	$(CC) -o $@ $^ $(INC) $(CFLAGS)
 
-$(OBJ)%.o: libs/%.c                #turns .c source files into object files
+$(OBJ)%.o: libs/**/%.c                #turns .c source files into object files
 	$(MKDIR)              
 	$(CC) -o $@ $^ $(INC) $(CFLAGS)
 	
 bin/$(PROJECT).elf: $(OBJS)      #makecontains debug symbols for GNU GDB
-	$(MKDIR)              
+	$(MKDIR)           
 	$(LD) -o $@ $^ $(LDFLAGS) --gc-sections
 
 bin/$(PROJECT).bin: bin/$(PROJECT).elf    #debug symbols for GNU GDB stripped by objcopy,finished binary ready for flashing
