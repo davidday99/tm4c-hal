@@ -55,8 +55,8 @@ void init_ssi_clock_prescale_divider(struct SSI *ssi, uint8_t prescale_div) {
 /*********************************************************/
 
 void init_ssi(struct SSI *ssi) {    
-    set_RCGCSSI(ssi->module, 1);
-    set_RCGCGPIO(ssi->tx->port, 1);
+    set_RCGCSSI(ssi->module, 1);  // TODO: replace with higher-level function
+    set_RCGCGPIO(ssi->tx->port, 1);  // TODO: replace with higher-level function
     init_ssi_afsel(ssi);
     init_ssi_pctl(ssi);
     init_ssi_den(ssi);
