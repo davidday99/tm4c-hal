@@ -149,83 +149,14 @@ static uint16_t text_color = ST7735_YELLOW;
 #define ST7735_GMCTRP1 0xE0
 #define ST7735_GMCTRN1 0xE1
 
-#define TFT_CS                  (*((volatile uint32_t *)0x40004020))
-#define TFT_CS_LOW              0           // CS normally controlled by hardware
-#define TFT_CS_HIGH             0x08
-#define DC                      (*((volatile uint32_t *)0x40004100))
-#define DC_COMMAND              0
-#define DC_DATA                 0x40
-#define RESET                   (*((volatile uint32_t *)0x40004200))
-#define RESET_LOW               0
-#define RESET_HIGH              0x80
-
-#define SSI_CR0_SCR_M           0x0000FF00  // SSI Serial Clock Rate
-#define SSI_CR0_SPH             0x00000080  // SSI Serial Clock Phase
-#define SSI_CR0_SPO             0x00000040  // SSI Serial Clock Polarity
-#define SSI_CR0_FRF_M           0x00000030  // SSI Frame Format Select
-#define SSI_CR0_FRF_MOTO        0x00000000  // Freescale SPI Frame Format
-#define SSI_CR0_DSS_M           0x0000000F  // SSI Data Size Select
-#define SSI_CR0_DSS_8           0x00000007  // 8-bit data
-#define SSI_CR1_MS              0x00000004  // SSI Master/Slave Select
-#define SSI_CR1_SSE             0x00000002  // SSI Synchronous Serial Port
-                                            // Enable
-#define SSI_SR_BSY              0x00000010  // SSI Busy Bit
-#define SSI_SR_TNF              0x00000002  // SSI Transmit FIFO Not Full
-#define SSI_CPSR_CPSDVSR_M      0x000000FF  // SSI Clock Prescale Divisor
-#define SSI_CC_CS_M             0x0000000F  // SSI Baud Clock Source
-#define SSI_CC_CS_SYSPLL        0x00000000  // Either the system clock (if the
-                                            // PLL bypass is in effect) or the
-                                            // PLL output (default)
-#define SYSCTL_RCGC1_SSI0       0x00000010  // SSI0 Clock Gating Control
-#define SYSCTL_RCGC2_GPIOA      0x00000001  // port A Clock Gating Control
 #define ST7735_TFTWIDTH  128
 #define ST7735_TFTHEIGHT 160
-
-#define ST7735_NOP     0x00
-#define ST7735_SWRESET 0x01
-#define ST7735_RDDID   0x04
-#define ST7735_RDDST   0x09
-
-#define ST7735_SLPIN   0x10
-#define ST7735_SLPOUT  0x11
-#define ST7735_PTLON   0x12
-#define ST7735_NORON   0x13
-
-#define ST7735_INVOFF  0x20
-#define ST7735_INVON   0x21
-#define ST7735_DISPOFF 0x28
-#define ST7735_DISPON  0x29
-#define ST7735_CASET   0x2A
-#define ST7735_RASET   0x2B
-#define ST7735_RAMWR   0x2C
-#define ST7735_RAMRD   0x2E
-
-#define ST7735_PTLAR   0x30
-#define ST7735_COLMOD  0x3A
-#define ST7735_MADCTL  0x36
 
 #define ST7735_FRMCTR1 0xB1
 #define ST7735_FRMCTR2 0xB2
 #define ST7735_FRMCTR3 0xB3
 #define ST7735_INVCTR  0xB4
 #define ST7735_DISSET5 0xB6
-
-#define ST7735_PWCTR1  0xC0
-#define ST7735_PWCTR2  0xC1
-#define ST7735_PWCTR3  0xC2
-#define ST7735_PWCTR4  0xC3
-#define ST7735_PWCTR5  0xC4
-#define ST7735_VMCTR1  0xC5
-
-#define ST7735_RDID1   0xDA
-#define ST7735_RDID2   0xDB
-#define ST7735_RDID3   0xDC
-#define ST7735_RDID4   0xDD
-
-#define ST7735_PWCTR6  0xFC
-
-#define ST7735_GMCTRP1 0xE0
-#define ST7735_GMCTRN1 0xE1
 
 #define MADCTL_MY  0x80
 #define MADCTL_MX  0x40
@@ -235,32 +166,31 @@ static uint16_t text_color = ST7735_YELLOW;
 #define MADCTL_BGR 0x08
 #define MADCTL_MH  0x04
 
-// ST7735
-// Backlight (pin 10) connected to +3.3 V
-// MISO (pin 9) unconnected
-// SCK (pin 8) connected to PA2 (SSI0Clk)
-// MOSI (pin 7) connected to PA5 (SSI0Tx)
-// TFT_CS (pin 6) connected to PA3 (SSI0Fss)
-// CARD_CS (pin 5) unconnected
-// Data/Command (pin 4) connected to PA6 (GPIO), high for data, low for command
-// RESET (pin 3) connected to PA7 (GPIO)
-// VCC (pin 2) connected to +3.3 V
-// Gnd (pin 1) connected to ground
+#define DELAY 0x80
 
-struct ST7735 {
-    struct SSI *ssi;
-    struct GPIO_PIN *dat_com;
-    struct GPIO_PIN *rst;
-};
-
+/**
+ * ST7735
+ * Backlight (pin 10) connected to +3.3 V
+ * MISO (pin 9) unconnected
+ * SCK (pin 8) connected to PA2 (SSI0Clk)
+ * MOSI (pin 7) connected to PA5 (SSI0Tx)
+ * TFT_CS (pin 6) connected to PA3 (SSI0Fss)
+ * CARD_CS (pin 5) unconnected
+ * Data/Command (pin 4) connected to PA6 (GPIO), high for data, low for command
+ * RESET (pin 3) connected to PA7 (GPIO)
+ * VCC (pin 2) connected to +3.3 V
+ * Gnd (pin 1) connected to ground
+ */
 struct ST7735 ST7735 = {
     &SSI_0,
     &PORTA_PIN6,
     &PORTA_PIN7
 };
 
-// standard ascii 5x7 font
-// originally from glcdfont.c from Adafruit project
+/**
+ * standard ascii 5x7 font
+ * originally from glcdfont.c from Adafruit project
+ */
 static const uint8_t Font[] = {
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x3E, 0x5B, 0x4F, 0x5B, 0x3E,
@@ -519,31 +449,108 @@ static const uint8_t Font[] = {
     0x00, 0x00, 0x00, 0x00, 0x00,
 };
 
+/**
+ * Rather than a bazillion writecommand() and writedata() calls, screen
+ * initialization commands and arguments are organized in these tables
+ * stored in ROM.  The table may look bulky, but that's mostly the
+ * formatting -- storage-wise this is hundreds of bytes more compact
+ * than the equivalent code.  Companion function follows.
+ */
+
+/* Init for 7735R, part 1 (red or green tab) */
+static const uint8_t Rcmd1[] = {
+    15,                         // 15 commands in list:
+    ST7735_SWRESET, DELAY,      // 1: Software reset, 0 args, w/delay
+    150,                        // 150 ms delay
+    ST7735_SLPOUT, DELAY,       // 2: Out of sleep mode, 0 args, w/delay
+    255,                        // 500 ms delay
+    ST7735_FRMCTR1, 3,          // 3: Frame rate ctrl - normal mode, 3 args:
+    0x01, 0x2C, 0x2D,           // Rate = fosc/(1x2+40) * (LINE+2C+2D)
+    ST7735_FRMCTR2, 3,          // 4: Frame rate control - idle mode, 3 args:
+    0x01, 0x2C, 0x2D,           // Rate = fosc/(1x2+40) * (LINE+2C+2D)
+    ST7735_FRMCTR3, 6,          // 5: Frame rate ctrl - partial mode, 6 args:
+    0x01, 0x2C, 0x2D,           // Dot inversion mode
+    0x01, 0x2C, 0x2D,           // Line inversion mode
+    ST7735_INVCTR, 1,           // 6: Display inversion ctrl, 1 arg, no delay:
+    0x07,                       // No inversion
+    ST7735_PWCTR1, 3,           // 7: Power control, 3 args, no delay:
+    0xA2,
+    0x02,                       // -4.6V
+    0x84,                       // AUTO mode
+    ST7735_PWCTR2, 1,           // 8: Power control, 1 arg, no delay:
+    0xC5,                       // VGH25 = 2.4C VGSEL = -10 VGH = 3 * AVDD
+    ST7735_PWCTR3, 2,           // 9: Power control, 2 args, no delay:
+    0x0A,                       // Opamp current small
+    0x00,                       // Boost frequency
+    ST7735_PWCTR4, 2,           // 10: Power control, 2 args, no delay:
+    0x8A,                       // BCLK/2, Opamp current small & Medium low
+    0x2A,
+    ST7735_PWCTR5, 2,           // 11: Power control, 2 args, no delay:
+    0x8A, 0xEE,
+    ST7735_VMCTR1, 1,           // 12: Power control, 1 arg, no delay:
+    0x0E,
+    ST7735_INVOFF, 0,           // 13: Don't invert display, no args, no delay
+    ST7735_MADCTL, 1,           // 14: Memory access control (directions), 1 arg:
+    0xC8,                       // row addr/col addr, bottom to top refresh
+    ST7735_COLMOD, 1,           // 15: set color mode, 1 arg, no delay:
+    0x05
+};  // 16-bit color
+
+/* Init for 7735R, part 2 (red tab only) */
+static const uint8_t Rcmd2red[] = { 
+    2,                          // 2 commands in list:
+    ST7735_CASET, 4,            // 1: Column addr set, 4 args, no delay:
+    0x00, 0x00,                 // XSTART = 0
+    0x00, 0x7F,                 // XEND = 127
+    ST7735_RASET, 4,            // 2: Row addr set, 4 args, no delay:
+    0x00, 0x00,                 // XSTART = 0
+    0x00, 0x9F                  // XEND = 159
+};                              
+
+/* Init for 7735R, part 3 (red or green tab) */
+static const uint8_t Rcmd3[] = {
+    4,                          // 4 commands in list:
+    ST7735_GMCTRP1, 16,         // 1: Magical unicorn dust, 16 args, no delay:
+    0x02, 0x1c, 0x07, 0x12,
+    0x37, 0x32, 0x29, 0x2d,
+    0x29, 0x25, 0x2B, 0x39,
+    0x00, 0x01, 0x03, 0x10,
+    ST7735_GMCTRN1, 16      ,   // 2: Sparkles and rainbows, 16 args, no delay:
+    0x03, 0x1d, 0x07, 0x06,
+    0x2E, 0x2C, 0x29, 0x2D,
+    0x2E, 0x2E, 0x37, 0x3F,
+    0x00, 0x00, 0x02, 0x10,
+    ST7735_NORON, DELAY,        // 3: Normal display on, no args, w/delay
+    10,                         // 10 ms delay
+    ST7735_DISPON, DELAY,       // 4: Main screen turn on, no args w/delay
+    100                         // 100 ms delay
+};                              
 
 static uint8_t ColStart, RowStart; // some displays need this changed
 static uint8_t Rotation;           // 0 to 3
-static enum initRFlags TabColor;
 static int16_t _width = ST7735_TFTWIDTH;   // this could probably be a constant, except it is used in Adafruit_GFX and depends on image rotation
 static int16_t _height = ST7735_TFTHEIGHT;
 
 
-// The Data/Command pin must be valid when the eighth bit is
-// sent.  The SSI module has hardware input and output FIFOs
-// that are 8 locations deep.  Based on the observation that
-// the LCD interface tends to send a few commands and then a
-// lot of data, the FIFOs are not used when writing
-// commands, and they are used when writing data.  This
-// ensures that the Data/Command pin status matches the byte
-// that is actually being transmitted.
-// The write command operation waits until all data has been
-// sent, configures the Data/Command pin for commands, sends
-// the command, and then waits for the transmission to
-// finish.
-// The write data operation waits until there is room in the
-// transmit FIFO, configures the Data/Command pin for data,
-// and then adds the data to the transmit FIFO.
-// NOTE: These functions will crash or stall indefinitely if
-// the SSI0 module is not initialized and enabled.
+/**
+ * The Data/Command pin must be valid when the eighth bit is
+ * sent.  The SSI module has hardware input and output FIFOs
+ * that are 8 locations deep.  Based on the observation that
+ * the LCD interface tends to send a few commands and then a
+ * lot of data, the FIFOs are not used when writing
+ * commands, and they are used when writing data.  This
+ * ensures that the Data/Command pin status matches the byte
+ * that is actually being transmitted.
+ * The write command operation waits until all data has been
+ * sent, configures the Data/Command pin for commands, sends
+ * the command, and then waits for the transmission to
+ * finish.
+ * The write data operation waits until there is room in the
+ * transmit FIFO, configures the Data/Command pin for data,
+ * and then adds the data to the transmit FIFO.
+ * NOTE: These functions will crash or stall indefinitely if
+ * the SSI0 module is not initialized and enabled.
+ */
 void static writecommand(struct ST7735 *st7735, uint8_t c) {
     while (ssi_is_busy(st7735->ssi))
         ;
@@ -562,10 +569,6 @@ void static writedata(struct ST7735 *st7735, uint8_t c) {
     write_ssi(st7735->ssi, &c, 1);
 }
 
-// Subroutine to wait 1 msec
-// Inputs: None
-// Outputs: None
-// Notes: ...
 void Delay1ms(uint32_t n){uint32_t volatile time;
     while(n){
         time = 72724*2/91;  // 1msec, tuned at 80 MHz
@@ -576,165 +579,27 @@ void Delay1ms(uint32_t n){uint32_t volatile time;
     }
 }
 
-// Rather than a bazillion writecommand() and writedata() calls, screen
-// initialization commands and arguments are organized in these tables
-// stored in ROM.  The table may look bulky, but that's mostly the
-// formatting -- storage-wise this is hundreds of bytes more compact
-// than the equivalent code.  Companion function follows.
-#define DELAY 0x80
-static const uint8_t
-    Bcmd[] = {                  // Initialization commands for 7735B screens
-    18,                       // 18 commands in list:
-    ST7735_SWRESET,   DELAY,  //  1: Software reset, no args, w/delay
-        50,                     //     50 ms delay
-    ST7735_SLPOUT ,   DELAY,  //  2: Out of sleep mode, no args, w/delay
-        255,                    //     255 = 500 ms delay
-    ST7735_COLMOD , 1+DELAY,  //  3: Set color mode, 1 arg + delay:
-        0x05,                   //     16-bit color
-        10,                     //     10 ms delay
-    ST7735_FRMCTR1, 3+DELAY,  //  4: Frame rate control, 3 args + delay:
-        0x00,                   //     fastest refresh
-        0x06,                   //     6 lines front porch
-        0x03,                   //     3 lines back porch
-        10,                     //     10 ms delay
-    ST7735_MADCTL , 1      ,  //  5: Memory access ctrl (directions), 1 arg:
-        0x08,                   //     Row addr/col addr, bottom to top refresh
-    ST7735_DISSET5, 2      ,  //  6: Display settings #5, 2 args, no delay:
-        0x15,                   //     1 clk cycle nonoverlap, 2 cycle gate
-                                //     rise, 3 cycle osc equalize
-        0x02,                   //     Fix on VTL
-    ST7735_INVCTR , 1      ,  //  7: Display inversion control, 1 arg:
-        0x0,                    //     Line inversion
-    ST7735_PWCTR1 , 2+DELAY,  //  8: Power control, 2 args + delay:
-        0x02,                   //     GVDD = 4.7V
-        0x70,                   //     1.0uA
-        10,                     //     10 ms delay
-    ST7735_PWCTR2 , 1      ,  //  9: Power control, 1 arg, no delay:
-        0x05,                   //     VGH = 14.7V, VGL = -7.35V
-    ST7735_PWCTR3 , 2      ,  // 10: Power control, 2 args, no delay:
-        0x01,                   //     Opamp current small
-        0x02,                   //     Boost frequency
-    ST7735_VMCTR1 , 2+DELAY,  // 11: Power control, 2 args + delay:
-        0x3C,                   //     VCOMH = 4V
-        0x38,                   //     VCOML = -1.1V
-        10,                     //     10 ms delay
-    ST7735_PWCTR6 , 2      ,  // 12: Power control, 2 args, no delay:
-        0x11, 0x15,
-    ST7735_GMCTRP1,16      ,  // 13: Magical unicorn dust, 16 args, no delay:
-        0x09, 0x16, 0x09, 0x20, //     (seriously though, not sure what
-        0x21, 0x1B, 0x13, 0x19, //      these config values represent)
-        0x17, 0x15, 0x1E, 0x2B,
-        0x04, 0x05, 0x02, 0x0E,
-    ST7735_GMCTRN1,16+DELAY,  // 14: Sparkles and rainbows, 16 args + delay:
-        0x0B, 0x14, 0x08, 0x1E, //     (ditto)
-        0x22, 0x1D, 0x18, 0x1E,
-        0x1B, 0x1A, 0x24, 0x2B,
-        0x06, 0x06, 0x02, 0x0F,
-        10,                     //     10 ms delay
-    ST7735_CASET  , 4      ,  // 15: Column addr set, 4 args, no delay:
-        0x00, 0x02,             //     XSTART = 2
-        0x00, 0x81,             //     XEND = 129
-    ST7735_RASET  , 4      ,  // 16: Row addr set, 4 args, no delay:
-        0x00, 0x02,             //     XSTART = 1
-        0x00, 0x81,             //     XEND = 160
-    ST7735_NORON  ,   DELAY,  // 17: Normal display on, no args, w/delay
-        10,                     //     10 ms delay
-    ST7735_DISPON ,   DELAY,  // 18: Main screen turn on, no args, w/delay
-        255 };                  //     255 = 500 ms delay
-static const uint8_t
-    Rcmd1[] = {                 // Init for 7735R, part 1 (red or green tab)
-    15,                       // 15 commands in list:
-    ST7735_SWRESET,   DELAY,  //  1: Software reset, 0 args, w/delay
-        150,                    //     150 ms delay
-    ST7735_SLPOUT ,   DELAY,  //  2: Out of sleep mode, 0 args, w/delay
-        255,                    //     500 ms delay
-    ST7735_FRMCTR1, 3      ,  //  3: Frame rate ctrl - normal mode, 3 args:
-        0x01, 0x2C, 0x2D,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
-    ST7735_FRMCTR2, 3      ,  //  4: Frame rate control - idle mode, 3 args:
-        0x01, 0x2C, 0x2D,       //     Rate = fosc/(1x2+40) * (LINE+2C+2D)
-    ST7735_FRMCTR3, 6      ,  //  5: Frame rate ctrl - partial mode, 6 args:
-        0x01, 0x2C, 0x2D,       //     Dot inversion mode
-        0x01, 0x2C, 0x2D,       //     Line inversion mode
-    ST7735_INVCTR , 1      ,  //  6: Display inversion ctrl, 1 arg, no delay:
-        0x07,                   //     No inversion
-    ST7735_PWCTR1 , 3      ,  //  7: Power control, 3 args, no delay:
-        0xA2,
-        0x02,                   //     -4.6V
-        0x84,                   //     AUTO mode
-    ST7735_PWCTR2 , 1      ,  //  8: Power control, 1 arg, no delay:
-        0xC5,                   //     VGH25 = 2.4C VGSEL = -10 VGH = 3 * AVDD
-    ST7735_PWCTR3 , 2      ,  //  9: Power control, 2 args, no delay:
-        0x0A,                   //     Opamp current small
-        0x00,                   //     Boost frequency
-    ST7735_PWCTR4 , 2      ,  // 10: Power control, 2 args, no delay:
-        0x8A,                   //     BCLK/2, Opamp current small & Medium low
-        0x2A,
-    ST7735_PWCTR5 , 2      ,  // 11: Power control, 2 args, no delay:
-        0x8A, 0xEE,
-    ST7735_VMCTR1 , 1      ,  // 12: Power control, 1 arg, no delay:
-        0x0E,
-    ST7735_INVOFF , 0      ,  // 13: Don't invert display, no args, no delay
-    ST7735_MADCTL , 1      ,  // 14: Memory access control (directions), 1 arg:
-        0xC8,                   //     row addr/col addr, bottom to top refresh
-    ST7735_COLMOD , 1      ,  // 15: set color mode, 1 arg, no delay:
-        0x05 };                 //     16-bit color
-static const uint8_t
-    Rcmd2green[] = {            // Init for 7735R, part 2 (green tab only)
-    2,                        //  2 commands in list:
-    ST7735_CASET  , 4      ,  //  1: Column addr set, 4 args, no delay:
-        0x00, 0x02,             //     XSTART = 0
-        0x00, 0x7F+0x02,        //     XEND = 127
-    ST7735_RASET  , 4      ,  //  2: Row addr set, 4 args, no delay:
-        0x00, 0x01,             //     XSTART = 0
-        0x00, 0x9F+0x01 };      //     XEND = 159
-static const uint8_t
-    Rcmd2red[] = {              // Init for 7735R, part 2 (red tab only)
-    2,                        //  2 commands in list:
-    ST7735_CASET  , 4      ,  //  1: Column addr set, 4 args, no delay:
-        0x00, 0x00,             //     XSTART = 0
-        0x00, 0x7F,             //     XEND = 127
-    ST7735_RASET  , 4      ,  //  2: Row addr set, 4 args, no delay:
-        0x00, 0x00,             //     XSTART = 0
-        0x00, 0x9F };           //     XEND = 159
-static const uint8_t
-    Rcmd3[] = {                 // Init for 7735R, part 3 (red or green tab)
-    4,                        //  4 commands in list:
-    ST7735_GMCTRP1, 16      , //  1: Magical unicorn dust, 16 args, no delay:
-        0x02, 0x1c, 0x07, 0x12,
-        0x37, 0x32, 0x29, 0x2d,
-        0x29, 0x25, 0x2B, 0x39,
-        0x00, 0x01, 0x03, 0x10,
-    ST7735_GMCTRN1, 16      , //  2: Sparkles and rainbows, 16 args, no delay:
-        0x03, 0x1d, 0x07, 0x06,
-        0x2E, 0x2C, 0x29, 0x2D,
-        0x2E, 0x2E, 0x37, 0x3F,
-        0x00, 0x00, 0x02, 0x10,
-    ST7735_NORON  ,    DELAY, //  3: Normal display on, no args, w/delay
-        10,                     //     10 ms delay
-    ST7735_DISPON ,    DELAY, //  4: Main screen turn on, no args w/delay
-        100 };                  //     100 ms delay
-
-
-// Companion code to the above tables.  Reads and issues
-// a series of LCD commands stored in ROM byte array.
-void static commandList(const uint8_t *addr) {
+void static commandList(struct ST7735 *st7735, const uint8_t *addr) {
 
     uint8_t numCommands, numArgs;
     uint16_t ms;
 
     numCommands = *(addr++);               // Number of commands to follow
+
     while(numCommands--) {                 // For each command...
-        writecommand(&ST7735, *(addr++));             //   Read, issue command
+        writecommand(st7735, *(addr++));             //   Read, issue command
         numArgs = *(addr++);                //   Number of args to follow
         ms = numArgs & DELAY;          //   If hibit set, delay follows args
         numArgs &= ~DELAY;                   //   Mask out delay bit
+        
         while(numArgs--) {                   //   For each argument...
-            writedata(&ST7735, *(addr++));              //     Read, issue argument
+            writedata(st7735, *(addr++));              //     Read, issue argument
         }
 
         if (ms) {
             ms = *(addr++);             // Read post-command delay time (ms)
-            if(ms == 255) ms = 500;     // If 255, delay for 500 ms
+            if(ms == 255)               // If 255, delay for 500 ms
+                ms = 500;   
             Delay1ms(ms);
         }
     }
@@ -750,7 +615,7 @@ void ST7735_toggle_reset(struct ST7735 *st7735) {
     Delay1ms(500);
 }
 
-void static ST7735_init_peripherals(struct ST7735 *st7735, const uint8_t *cmdList) {
+void static ST7735_init_peripherals(struct ST7735 *st7735) {
     ColStart = RowStart = 0; // May be overridden in init func
 
     init_gpio_port_clock(st7735->dat_com);
@@ -769,26 +634,19 @@ void static ST7735_init_peripherals(struct ST7735 *st7735, const uint8_t *cmdLis
     init_ssi_clock_prescale_divider(st7735->ssi, 10);
     init_ssi_mode(st7735->ssi, 0, 0, 0, 0, 8);
     enable_ssi(st7735->ssi);
-
-    if (cmdList)
-        commandList(cmdList);
 }
 
-//------------ST7735_InitR------------
-// Initialization for ST7735R screens (green or red tabs).
-// Input: option one of the enumerated options depending on tabs
-// Output: none
-void ST7735_InitR(enum initRFlags option) {
-    ST7735_init_peripherals(&ST7735, Rcmd1);
+void ST7735_init(struct ST7735 *st7735) {
+    ST7735_init_peripherals(st7735);
     
     // colstart, rowstart left at default '0' values
-    commandList(Rcmd2red);
-    commandList(Rcmd3);
+    commandList(st7735, Rcmd1);
+    commandList(st7735, Rcmd2red);
+    commandList(st7735, Rcmd3);
 
-    TabColor = option;
-    ST7735_SetCursor(0,0);
+    ST7735_SetCursor(st7735, 0,0);
     text_color = ST7735_YELLOW;
-    ST7735_FillScreen(0);                 // set screen to black
+    ST7735_FillScreen(st7735, 0);                 // set screen to black
 }
 
 // Set the region of the screen RAM to be modified
@@ -834,7 +692,6 @@ void ST7735_DrawPixel(int16_t x, int16_t y, uint16_t color) {
 
     if((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) return;
 
-    //  setAddrWindow(x,y,x+1,y+1); // original code, bug???
     setAddrWindow(x,y,x,y);
 
     pushColor(color);
@@ -891,7 +748,7 @@ void ST7735_DrawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
 // Requires 40,971 bytes of transmission
 // Input: color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
-void ST7735_FillScreen(uint16_t color) {
+void ST7735_FillScreen(struct ST7735 *st7735, uint16_t color) {
   ST7735_FillRect(0, 0, _width, _height, color);  // original
 }
 
@@ -1139,74 +996,12 @@ uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor){
 // inputs: newX  new X-position of the cursor (0<=newX<=20)
 //         newY  new Y-position of the cursor (0<=newY<=15)
 // outputs: none
-void ST7735_SetCursor(uint32_t newX, uint32_t newY){
+void ST7735_SetCursor(struct ST7735 *st7735, uint32_t newX, uint32_t newY){
     if((newX > 20) || (newY > 15)){       // bad input
         return;                             // do nothing
     }
     x_pos = newX;
     y_pos = newY;
-}
-
-//------------ST7735_SetRotation------------
-// Change the image rotation.
-// Requires 2 bytes of transmission
-// Input: m new rotation value (0 to 3)
-// Output: none
-void ST7735_SetRotation(uint8_t m) {
-
-    writecommand(&ST7735, ST7735_MADCTL);
-    Rotation = m % 4; // can't be higher than 3
-    switch (Rotation) {
-        case 0:
-            if (TabColor == INITR_BLACKTAB) {
-                writedata(&ST7735, MADCTL_MX | MADCTL_MY | MADCTL_RGB);
-            } else {
-                writedata(&ST7735, MADCTL_MX | MADCTL_MY | MADCTL_BGR);
-            }
-            _width  = ST7735_TFTWIDTH;
-            _height = ST7735_TFTHEIGHT;
-            break;
-        case 1:
-            if (TabColor == INITR_BLACKTAB) {
-                writedata(&ST7735, MADCTL_MY | MADCTL_MV | MADCTL_RGB);
-            } else {
-                writedata(&ST7735, MADCTL_MY | MADCTL_MV | MADCTL_BGR);
-            }
-            _width  = ST7735_TFTHEIGHT;
-            _height = ST7735_TFTWIDTH;
-            break;
-        case 2:
-            if (TabColor == INITR_BLACKTAB) {
-                writedata(&ST7735, MADCTL_RGB);
-            } else {
-                writedata(&ST7735, MADCTL_BGR);
-            }
-            _width  = ST7735_TFTWIDTH;
-            _height = ST7735_TFTHEIGHT;
-        break;
-        case 3:
-            if (TabColor == INITR_BLACKTAB) {
-                writedata(&ST7735, MADCTL_MX | MADCTL_MV | MADCTL_RGB);
-            } else {
-                writedata(&ST7735, MADCTL_MX | MADCTL_MV | MADCTL_BGR);
-            }
-            _width  = ST7735_TFTHEIGHT;
-            _height = ST7735_TFTWIDTH;
-            break;
-    }
-}
-
-//------------ST7735_InvertDisplay------------
-// Send the command to invert all of the colors.
-// Requires 1 byte of transmission
-// Input: i 0 to disable inversion; non-zero to enable inversion
-// Output: none
-void ST7735_InvertDisplay(int i) {
-    if(i){
-        writecommand(&ST7735, ST7735_INVON);
-    } else{
-        writecommand(&ST7735, ST7735_INVOFF);
-    }
 }
 
 // *************** ST7735_OutChar ********************
@@ -1274,6 +1069,6 @@ void ST7735_SetTextColor(uint16_t color){
 // Inputs: none
 // Outputs: none
 void Output_Init(void){
-    ST7735_InitR(INITR_REDTAB);
-    ST7735_FillScreen(0);                 // set screen to black
+    ST7735_init(&ST7735);
+    ST7735_FillScreen(&ST7735, 0);                 // set screen to black
 }

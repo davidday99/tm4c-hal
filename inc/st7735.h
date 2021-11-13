@@ -40,27 +40,16 @@
  http://users.ece.utexas.edu/~valvano/
  */
 
-// Backlight (pin 10) connected to +3.3 V
-// MISO (pin 9) unconnected
-// SCK (pin 8) connected to PA2 (SSI0Clk)
-// MOSI (pin 7) connected to PA5 (SSI0Tx)
-// TFT_CS (pin 6) connected to PA3 (SSI0Fss)
-// CARD_CS (pin 5) unconnected
-// Data/Command (pin 4) connected to PA6 (GPIO)
-// RESET (pin 3) connected to PA7 (GPIO)
-// VCC (pin 2) connected to +3.3 V
-// Gnd (pin 1) connected to ground
-
 #ifndef _ST7735H_
 #define _ST7735H_
 
-// some flags for ST7735_InitR()
-enum initRFlags{
-    none,
-    INITR_GREENTAB,
-    INITR_REDTAB,
-    INITR_BLACKTAB
+struct ST7735 {
+    struct SSI *ssi;
+    struct GPIO_PIN *dat_com;
+    struct GPIO_PIN *rst;
 };
+
+extern struct ST7735 ST7735;
 
 #define ST7735_BLACK   0x0000
 #define ST7735_BLUE    0xF800
@@ -71,9 +60,7 @@ enum initRFlags{
 #define ST7735_YELLOW  0x07FF
 #define ST7735_WHITE   0xFFFF
 
-// Initialization for ST7735R screens (green or red tabs)
-// ST7735_InitR(INITR_GREENTAB);
-void ST7735_InitR(enum initRFlags option);
+void ST7735_init();
 
 void ST7735_DrawPixel(short x, short y, unsigned short color);
 
@@ -81,7 +68,7 @@ void ST7735_DrawFastVLine(short x, short y, short h, unsigned short color);
 
 void ST7735_DrawFastHLine(short x, short y, short w, unsigned short color);
 
-void ST7735_FillScreen(unsigned short color);
+void ST7735_FillScreen(struct ST7735 *st7735, unsigned short color);
 
 void ST7735_FillRect(short x, short y, short w, short h, unsigned short color);
 
@@ -157,7 +144,7 @@ void ST7735_PlotdBfs(int32_t y);
 // Outputs: none
 void ST7735_PlotNext(void);
 
-void ST7735_SetCursor(uint32_t newX, uint32_t newY);
+void ST7735_SetCursor(struct ST7735 *st7735, uint32_t newX, uint32_t newY);
 
 void Output_Init(void);
 
