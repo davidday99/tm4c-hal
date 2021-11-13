@@ -74,6 +74,7 @@ void enable_gpio_pin_pulldown_resistor(struct GPIO_PIN *gpio_pin);
 void set_gpio_pin_alternate_function(struct GPIO_PIN *gpio_pin, uint32_t value);
 void unlock_and_commit_gpio_pin(struct GPIO_PIN *gpio_pin);
 void uncommit_and_lock_gpio_pin(struct GPIO_PIN *gpio_pin);
-
+void set_gpio_pin_high(struct GPIO_PIN *gpio_pin);
+void set_gpio_pin_low(struct GPIO_PIN *gpio_pin);
 
 #endif /* _GPIO_MODULE_H_ */

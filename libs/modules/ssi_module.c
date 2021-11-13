@@ -76,11 +76,8 @@ uint32_t read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
     return read_SSIDR_into_array(ssi->module, data, size);
 }
 
-void write_ssi(struct SSI *ssi, uint8_t *data) {
-    int len = 0;
-    while (data[len] !=0)
-        len++;
-    write_array_SSIDR(ssi->module, data, len);
+void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
+    write_array_SSIDR(ssi->module, data, size);
 }
 
 static void init_ssi_afsel(struct SSI *ssi) {
@@ -125,3 +122,17 @@ static void init_ssi_den(struct SSI *ssi) {
     init_gpio_pin_as_digital(ssi->fss);
     init_gpio_pin_as_digital(ssi->clk);
 }
+
+uint8_t ssi_is_busy(struct SSI *ssi) {
+    return SSI_bsy(ssi->module);
+}
+
+uint8_t ssi_tx_ready(struct SSI *ssi) {
+    return !SSI_tx_full(ssi->module);
+}
+
+uint8_t ssi_rx_ready(struct SSI *ssi) {
+    return !SSI_rx_full(ssi->module);
+}
+
+

@@ -24,6 +24,9 @@ void init_ssi(struct SSI *ssi);
 void enable_ssi(struct SSI *ssi);
 void disable_ssi(struct SSI *ssi);
 uint32_t read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size);
-void write_ssi(struct SSI *ssi, uint8_t *data);
+void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size);
+uint8_t ssi_is_busy(struct SSI *ssi);
+uint8_t ssi_tx_ready(struct SSI *ssi);
+uint8_t ssi_rx_ready(struct SSI *ssi);
 
 #endif /* _SSI_MODULE_H_*/
