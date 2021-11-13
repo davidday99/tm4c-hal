@@ -47,6 +47,9 @@ struct ST7735 {
     struct SSI *ssi;
     struct GPIO_PIN *dat_com;
     struct GPIO_PIN *rst;
+    uint8_t x_pos;
+    uint8_t y_pos;
+    uint16_t text_color;
 };
 
 extern struct ST7735 ST7735;
@@ -75,6 +78,8 @@ void ST7735_FillRect(struct ST7735 *st7735, short x, short y, short w, short h, 
 unsigned short ST7735_Color565(unsigned char r, unsigned char g, unsigned char b);
 
 unsigned short ST7735_SwapColor(unsigned short x);
+
+void ST7735_SetTextColor(struct ST7735 *st7735, uint16_t color);
 
 void ST7735_DrawCharS(struct ST7735 *st7735, int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 
