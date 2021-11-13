@@ -126,10 +126,10 @@ void init_gpio_pin_PCTL(enum PORT port, enum PIN pin, uint32_t value) {
 }
 
 uint8_t read_gpio_pin_DATA(enum PORT port, enum PIN pin) {
-    return *(PORTS[port].DATA) & (1 << pin);
+    return *(PORTS[port].DATA) & ~(1 << pin);
 }
 
 void set_gpio_pin_DATA(enum PORT port, enum PIN pin, uint8_t value) {
-    *(PORTS[port].DATA) = (*(PORTS[port].DATA) & (1 << pin)) |
+    *(PORTS[port].DATA) = (*(PORTS[port].DATA) & ~(1 << pin)) |
                             (value << pin);
 }
