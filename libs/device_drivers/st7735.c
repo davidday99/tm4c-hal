@@ -458,7 +458,7 @@ static const uint8_t Font[] = {
  */
 
 /* Init for 7735R, part 1 (red or green tab) */
-static const uint8_t Rcmd1[] = {
+static const uint8_t power_init_seq[] = {
     15,                         // 15 commands in list:
     ST7735_SWRESET, DELAY,      // 1: Software reset, 0 args, w/delay
     150,                        // 150 ms delay
@@ -497,7 +497,7 @@ static const uint8_t Rcmd1[] = {
 };  // 16-bit color
 
 /* Init for 7735R, part 2 (red tab only) */
-static const uint8_t Rcmd2red[] = { 
+static const uint8_t addr_init_seq[] = { 
     2,                          // 2 commands in list:
     ST7735_CASET, 4,            // 1: Column addr set, 4 args, no delay:
     0x00, 0x00,                 // XSTART = 0
@@ -508,7 +508,7 @@ static const uint8_t Rcmd2red[] = {
 };                              
 
 /* Init for 7735R, part 3 (red or green tab) */
-static const uint8_t Rcmd3[] = {
+static const uint8_t display_init_seq[] = {
     4,                          // 4 commands in list:
     ST7735_GMCTRP1, 16,         // 1: Magical unicorn dust, 16 args, no delay:
     0x02, 0x1c, 0x07, 0x12,
@@ -579,7 +579,7 @@ void Delay1ms(uint32_t n){uint32_t volatile time;
     }
 }
 
-void static commandList(struct ST7735 *st7735, const uint8_t *addr) {
+void static execute_command_sequence(struct ST7735 *st7735, const uint8_t *addr) {
 
     uint8_t numCommands, numArgs;
     uint16_t ms;
@@ -640,9 +640,9 @@ void ST7735_init(struct ST7735 *st7735) {
     ST7735_init_peripherals(st7735);
     
     // colstart, rowstart left at default '0' values
-    commandList(st7735, Rcmd1);
-    commandList(st7735, Rcmd2red);
-    commandList(st7735, Rcmd3);
+    execute_command_sequence(st7735, power_init_seq);
+    execute_command_sequence(st7735, addr_init_seq);
+    execute_command_sequence(st7735, display_init_seq);
 
     ST7735_SetCursor(st7735, 0,0);
     text_color = ST7735_YELLOW;
@@ -653,28 +653,28 @@ void ST7735_init(struct ST7735 *st7735) {
 // Pixel colors are sent left to right, top to bottom
 // (same as Font table is encoded; different from regular bitmap)
 // Requires 11 bytes of transmission
-void static setAddrWindow(uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+void static setAddrWindow(struct ST7735 *st7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
 
-    writecommand(&ST7735, ST7735_CASET); // Column addr set
-    writedata(&ST7735, 0x00);
-    writedata(&ST7735, x0+ColStart);     // XSTART
-    writedata(&ST7735, 0x00);
-    writedata(&ST7735, x1+ColStart);     // XEND
+    writecommand(st7735, ST7735_CASET); // Column addr set
+    writedata(st7735, 0x00);
+    writedata(st7735, x0+ColStart);     // XSTART
+    writedata(st7735, 0x00);
+    writedata(st7735, x1+ColStart);     // XEND
 
-    writecommand(&ST7735, ST7735_RASET); // Row addr set
-    writedata(&ST7735, 0x00);
-    writedata(&ST7735, y0+RowStart);     // YSTART
-    writedata(&ST7735, 0x00);
-    writedata(&ST7735, y1+RowStart);     // YEND
+    writecommand(st7735, ST7735_RASET); // Row addr set
+    writedata(st7735, 0x00);
+    writedata(st7735, y0+RowStart);     // YSTART
+    writedata(st7735, 0x00);
+    writedata(st7735, y1+RowStart);     // YEND
 
-    writecommand(&ST7735, ST7735_RAMWR); // write to RAM
+    writecommand(st7735, ST7735_RAMWR); // write to RAM
 }
 
 // Send two bytes of data, most significant byte first
 // Requires 2 bytes of transmission
-void static pushColor(uint16_t color) {
-    writedata(&ST7735, (uint8_t)(color >> 8));
-    writedata(&ST7735, (uint8_t)color);
+void static pushColor(struct ST7735 *st7735, uint16_t color) {
+    writedata(st7735, (uint8_t)(color >> 8));
+    writedata(st7735, (uint8_t)color);
 }
 
 //------------ST7735_DrawPixel------------
@@ -688,13 +688,13 @@ void static pushColor(uint16_t color) {
 //               159 is near the wires, 0 is the side opposite the wires
 //        color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
-void ST7735_DrawPixel(int16_t x, int16_t y, uint16_t color) {
+void ST7735_DrawPixel(struct ST7735 *st7735, int16_t x, int16_t y, uint16_t color) {
 
     if((x < 0) || (x >= _width) || (y < 0) || (y >= _height)) return;
 
-    setAddrWindow(x,y,x,y);
+    setAddrWindow(st7735, x,y,x,y);
 
-    pushColor(color);
+    pushColor(st7735, color);
 }
 
 //------------ST7735_DrawFastVLine------------
@@ -706,17 +706,17 @@ void ST7735_DrawPixel(int16_t x, int16_t y, uint16_t color) {
 //        h     vertical height of the line
 //        color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
-void ST7735_DrawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
+void ST7735_DrawFastVLine(struct ST7735 *st7735, int16_t x, int16_t y, int16_t h, uint16_t color) {
     uint8_t hi = color >> 8, lo = color;
 
     // Rudimentary clipping
     if((x >= _width) || (y >= _height)) return;
     if((y+h-1) >= _height) h = _height-y;
-    setAddrWindow(x, y, x, y+h-1);
+    setAddrWindow(st7735, x, y, x, y+h-1);
 
     while (h--) {
-    writedata(&ST7735, hi);
-    writedata(&ST7735, lo);
+    writedata(st7735, hi);
+    writedata(st7735, lo);
     }
 }
 
@@ -729,17 +729,17 @@ void ST7735_DrawFastVLine(int16_t x, int16_t y, int16_t h, uint16_t color) {
 //        w     horizontal width of the line
 //        color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
-void ST7735_DrawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
+void ST7735_DrawFastHLine(struct ST7735 *st7735, int16_t x, int16_t y, int16_t w, uint16_t color) {
     uint8_t hi = color >> 8, lo = color;
 
     // Rudimentary clipping
     if((x >= _width) || (y >= _height)) return;
     if((x+w-1) >= _width)  w = _width-x;
-    setAddrWindow(x, y, x+w-1, y);
+    setAddrWindow(st7735, x, y, x+w-1, y);
 
     while (w--) {
-        writedata(&ST7735, hi);
-        writedata(&ST7735, lo);
+        writedata(st7735, hi);
+        writedata(st7735, lo);
     }
 }
 
@@ -749,7 +749,7 @@ void ST7735_DrawFastHLine(int16_t x, int16_t y, int16_t w, uint16_t color) {
 // Input: color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
 void ST7735_FillScreen(struct ST7735 *st7735, uint16_t color) {
-  ST7735_FillRect(0, 0, _width, _height, color);  // original
+  ST7735_FillRect(st7735, 0, 0, _width, _height, color);  // original
 }
 
 //------------ST7735_FillRect------------
@@ -761,7 +761,7 @@ void ST7735_FillScreen(struct ST7735 *st7735, uint16_t color) {
 //        h     vertical height of the rectangle
 //        color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
-void ST7735_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
+void ST7735_FillRect(struct ST7735 *st7735, int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color) {
     uint8_t hi = color >> 8, lo = color;
 
     // rudimentary clipping (drawChar w/big text requires this)
@@ -769,12 +769,12 @@ void ST7735_FillRect(int16_t x, int16_t y, int16_t w, int16_t h, uint16_t color)
     if((x + w - 1) >= _width)  w = _width  - x;
     if((y + h - 1) >= _height) h = _height - y;
 
-    setAddrWindow(x, y, x+w-1, y+h-1);
+    setAddrWindow(st7735, x, y, x+w-1, y+h-1);
 
     for(y=h; y>0; y--) {
         for(x=w; x>0; x--) {
-            writedata(&ST7735, hi);
-            writedata(&ST7735, lo);
+            writedata(st7735, hi);
+            writedata(st7735, lo);
         }
     }
 }
@@ -798,74 +798,6 @@ uint16_t ST7735_SwapColor(uint16_t x) {
     return (x << 11) | (x & 0x07E0) | (x >> 11);
 }
 
-//------------ST7735_DrawBitmap------------
-// Displays a 16-bit color BMP image.  A bitmap file that is created
-// by a PC image processing program has a header and may be padded
-// with dummy columns so the data have four byte alignment.  This
-// function assumes that all of that has been stripped out, and the
-// array image[] has one 16-bit halfword for each pixel to be
-// displayed on the screen (encoded in reverse order, which is
-// standard for bitmap files).  An array can be created in this
-// format from a 24-bit-per-pixel .bmp file using the associated
-// converter program.
-// (x,y) is the screen location of the lower left corner of BMP image
-// Requires (11 + 2*w*h) bytes of transmission (assuming image fully on screen)
-// Input: x     horizontal position of the bottom left corner of the image, columns from the left edge
-//        y     vertical position of the bottom left corner of the image, rows from the top edge
-//        image pointer to a 16-bit color BMP image
-//        w     number of pixels wide
-//        h     number of pixels tall
-// Output: none
-// Must be less than or equal to 128 pixels wide by 160 pixels high
-void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, int16_t h){
-    int16_t skipC = 0;                      // non-zero if columns need to be skipped due to clipping
-    int16_t originalWidth = w;              // save this value; even if not all columns fit on the screen, the image is still this width in ROM
-    int i = w*(h - 1);
-
-    if((x >= _width) || ((y - h + 1) >= _height) || ((x + w) <= 0) || (y < 0)){
-        return;                             // image is totally off the screen, do nothing
-    }
-    if((w > _width) || (h > _height)){    // image is too wide for the screen, do nothing
-    //***This isn't necessarily a fatal error, but it makes the
-    //following logic much more complicated, since you can have
-    //an image that exceeds multiple boundaries and needs to be
-    //clipped on more than one side.
-        return;
-    }
-    if((x + w - 1) >= _width){            // image exceeds right of screen
-        skipC = (x + w) - _width;           // skip cut off columns
-        w = _width - x;
-    }
-    if((y - h + 1) < 0){                  // image exceeds top of screen
-        i = i - (h - y - 1)*originalWidth;  // skip the last cut off rows
-        h = y + 1;
-    }
-    if(x < 0){                            // image exceeds left of screen
-        w = w + x;
-        skipC = -1*x;                       // skip cut off columns
-        i = i - x;                          // skip the first cut off columns
-        x = 0;
-    }
-    if(y >= _height){                     // image exceeds bottom of screen
-        h = h - (y - _height + 1);
-        y = _height - 1;
-    }
-
-    setAddrWindow(x, y-h+1, x+w-1, y);
-
-    for(y=0; y<h; y=y+1){
-        for(x=0; x<w; x=x+1){
-                                            // send the top 8 bits
-            writedata(&ST7735, (uint8_t)(image[i] >> 8));
-                                            // send the bottom 8 bits
-            writedata(&ST7735, (uint8_t)image[i]);
-            i = i + 1;                        // go to the next pixel
-        }
-        i = i + skipC;
-        i = i - 2*originalWidth;
-    }
-}
-
 //------------ST7735_DrawCharS------------
 // Simple character draw function.  This is the same function from
 // Adafruit_GFX.c but adapted for this processor.  However, each call
@@ -881,7 +813,7 @@ void ST7735_DrawBitmap(int16_t x, int16_t y, const uint16_t *image, int16_t w, i
 //        bgColor   16-bit color of the background
 //        size      number of pixels per character pixel (e.g. size==2 prints each pixel of font as 2x2 square)
 // Output: none
-void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size){
+void ST7735_DrawCharS(struct ST7735 *st7735, int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size){
     uint8_t line; // vertical column of pixels of character in font
     int32_t i, j;
     if((x >= _width)            || // Clip right
@@ -898,15 +830,15 @@ void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t b
         for (j = 0; j<8; j++) {
             if (line & 0x1) {
                 if (size == 1) // default size
-                    ST7735_DrawPixel(x+i, y+j, textColor);
+                    ST7735_DrawPixel(st7735, x+i, y+j, textColor);
                 else {  // big size
-                    ST7735_FillRect(x+(i*size), y+(j*size), size, size, textColor);
+                    ST7735_FillRect(st7735, x+(i*size), y+(j*size), size, size, textColor);
                 }
             } else if (bgColor != textColor) {
                 if (size == 1) // default size
-                    ST7735_DrawPixel(x+i, y+j, bgColor);
+                    ST7735_DrawPixel(st7735, x+i, y+j, bgColor);
                 else {  // big size
-                    ST7735_FillRect(x+i*size, y+j*size, size, size, bgColor);
+                    ST7735_FillRect(st7735, x+i*size, y+j*size, size, size, bgColor);
                 }
             }
             line >>= 1;
@@ -927,7 +859,7 @@ void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t b
 //        bgColor   16-bit color of the background
 //        size      number of pixels per character pixel (e.g. size==2 prints each pixel of font as 2x2 square)
 // Output: none
-void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size){
+void ST7735_DrawChar(struct ST7735 *st7735, int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size){
     uint8_t line; // horizontal row of pixels of character
     int32_t col, row, i, j;// loop indices
     if(((x + 5*size - 1) >= _width)  || // Clip right
@@ -937,7 +869,7 @@ void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bg
         return;
     }
 
-    setAddrWindow(x, y, x+6*size-1, y+8*size-1);
+    setAddrWindow(st7735, x, y, x+6*size-1, y+8*size-1);
 
     line = 0x01;        // print the top row first
     // print the rows, starting at the top
@@ -948,18 +880,18 @@ void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bg
                 if(Font[(c*5)+col]&line){
                 // bit is set in Font, print pixel(s) in text color
                     for(j=0; j<size; j=j+1){
-                        pushColor(textColor);
+                        pushColor(st7735, textColor);
                     }
                 } else{
                     // bit is cleared in Font, print pixel(s) in background color
                     for(j=0; j<size; j=j+1){
-                        pushColor(bgColor);
+                        pushColor(st7735, bgColor);
                     }
                 }
             }
             // print blank column(s) to the right of character
             for(j=0; j<size; j=j+1){
-                pushColor(bgColor);
+                pushColor(st7735, bgColor);
             }
         }
         line = line<<1;   // move up to the next row
@@ -976,11 +908,11 @@ void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bg
 //        textColor 16-bit color of the characters
 // bgColor is Black and size is 1
 // Output: number of characters printed
-uint32_t ST7735_DrawString(uint16_t x, uint16_t y, char *pt, int16_t textColor){
+uint32_t ST7735_DrawString(struct ST7735 *st7735, uint16_t x, uint16_t y, char *pt, int16_t textColor){
     uint32_t count = 0;
     if(y>15) return 0;
     while(*pt){
-        ST7735_DrawCharS(x*6, y*10, *pt, textColor, ST7735_BLACK, 1);
+        ST7735_DrawCharS(st7735, x*6, y*10, *pt, textColor, ST7735_BLACK, 1);
         pt++;
         x = x+1;
         if(x>20) return count;  // number of characters printed
@@ -1013,13 +945,13 @@ void ST7735_SetCursor(struct ST7735 *st7735, uint32_t newX, uint32_t newY){
 //main.c
 //Toggles the Red LED of TM4C Launchpad when SW1(PF4) is pushed and held
 //PF4 is negative logic,i.e 0 is on and non-zero is off
-void ST7735_OutChar(char ch){
+void ST7735_OutChar(struct ST7735 *st7735, char ch){
     if((ch == 10) || (ch == 13) || (ch == 27)){
         y_pos++; x_pos=0;
         if(y_pos>15){
             y_pos = 0;
         }
-        ST7735_DrawString(0,y_pos,"                     ",text_color);
+        ST7735_DrawString(st7735, 0,y_pos,"                     ",text_color);
         return;
     } else if (ch == 8) {
         if (x_pos == 0) {
@@ -1027,14 +959,14 @@ void ST7735_OutChar(char ch){
         } else {
             x_pos--;
         }
-        ST7735_DrawCharS(x_pos*6,y_pos*10,' ',ST7735_YELLOW,ST7735_BLACK, 1);
+        ST7735_DrawCharS(st7735, x_pos*6,y_pos*10,' ',ST7735_YELLOW,ST7735_BLACK, 1);
         return;
     }
-    ST7735_DrawCharS(x_pos*6,y_pos*10,ch,ST7735_YELLOW,ST7735_BLACK, 1);
+    ST7735_DrawCharS(st7735, x_pos*6,y_pos*10,ch,ST7735_YELLOW,ST7735_BLACK, 1);
     x_pos++;
     if(x_pos>20){
         x_pos = 20;
-        ST7735_DrawCharS(x_pos*6,y_pos*10,'*',ST7735_RED,ST7735_BLACK, 1);
+        ST7735_DrawCharS(st7735, x_pos*6,y_pos*10,'*',ST7735_RED,ST7735_BLACK, 1);
     }
     return;
 }
@@ -1046,9 +978,9 @@ void ST7735_OutChar(char ch){
 // The string will not automatically wrap.
 // inputs: ptr  pointer to NULL-terminated ASCII string
 // outputs: none
-void ST7735_OutString(char *ptr){
+void ST7735_OutString(struct ST7735 *st7735, char *ptr){
     while(*ptr){
-        ST7735_OutChar(*ptr);
+        ST7735_OutChar(st7735, *ptr);
         ptr = ptr + 1;
     }
 }
@@ -1068,7 +1000,6 @@ void ST7735_SetTextColor(uint16_t color){
 // Initialize ST7735 LCD
 // Inputs: none
 // Outputs: none
-void Output_Init(void){
-    ST7735_init(&ST7735);
-    ST7735_FillScreen(&ST7735, 0);                 // set screen to black
+void Output_Init(struct ST7735 *st7735){
+    ST7735_init(st7735);
 }

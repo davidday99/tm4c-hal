@@ -51,15 +51,15 @@ int main(void){
 
     PLL_init();
 
-    Output_Init();
-    ST7735_OutString("Hello, world!\n");
+    Output_Init(&ST7735);
+    ST7735_OutString(&ST7735, "Hello, world!\n");
     Delay();
 
-    ST7735_OutString("Address of i:\n");
+    ST7735_OutString(&ST7735, "Address of i:\n");
     char buf[20];
     hex_to_str((uint32_t) &buf, buf);
-    ST7735_OutString(buf);
-    ST7735_OutString("\n");
+    ST7735_OutString(&ST7735, buf);
+    ST7735_OutString(&ST7735, "\n");
 
     while (1) {
 

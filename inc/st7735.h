@@ -62,92 +62,30 @@ extern struct ST7735 ST7735;
 
 void ST7735_init();
 
-void ST7735_DrawPixel(short x, short y, unsigned short color);
+void ST7735_DrawPixel(struct ST7735 *st7735, short x, short y, unsigned short color);
 
-void ST7735_DrawFastVLine(short x, short y, short h, unsigned short color);
+void ST7735_DrawFastVLine(struct ST7735 *st7735, short x, short y, short h, unsigned short color);
 
-void ST7735_DrawFastHLine(short x, short y, short w, unsigned short color);
+void ST7735_DrawFastHLine(struct ST7735 *st7735, short x, short y, short w, unsigned short color);
 
 void ST7735_FillScreen(struct ST7735 *st7735, unsigned short color);
 
-void ST7735_FillRect(short x, short y, short w, short h, unsigned short color);
+void ST7735_FillRect(struct ST7735 *st7735, short x, short y, short w, short h, unsigned short color);
 
 unsigned short ST7735_Color565(unsigned char r, unsigned char g, unsigned char b);
 
 unsigned short ST7735_SwapColor(unsigned short x);
 
-void ST7735_DrawBitmap(short x, short y, const unsigned short *image, short w, short h);
+void ST7735_DrawCharS(struct ST7735 *st7735, int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 
-void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
+void ST7735_DrawChar(struct ST7735 *st7735, int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 
-void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
-
-//------------ST7735_OutString------------
-// String draw function.  
-// 16 rows (0 to 15) and 21 characters (0 to 20)
-// Requires (11 + size*size*6*8) bytes of transmission for each character
-// Input: x         columns from the left edge (0 to 20)
-//        y         rows from the top edge (0 to 15)
-//        pt        pointer to a null terminated string to be printed
-//        textColor 16-bit color of the characters
-// bgColor is Black and size is 1
-// Output: number of characters printed
-void ST7735_OutString(char *ptr);
-
-
-//------------ST7735_Message------------
-// String draw and number output.  
-// Input: device  0 is on top, 1 is on bottom
-//        line    row from top, 0 to 7 for each device
-//        pt      pointer to a null terminated string to be printed
-//        value   signed integer to be printed
-void ST7735_Message (unsigned long d, unsigned long l, unsigned char *pt, long value);
-
-void ST7735_SetRotation(unsigned char m);
-
-void ST7735_InvertDisplay(int i);
-
-// *************** ST7735_PlotClear ********************
-// Clear the graphics buffer, set X coordinate to 0
-// This routine clears the display 
-// Inputs: ymin and ymax are range of the plot
-// Outputs: none
-void ST7735_PlotClear(int32_t ymin, int32_t ymax);
-
-// *************** ST7735_PlotPoint ********************
-// Used in the voltage versus time plot, plot one point at y
-// It does output to display 
-// Inputs: y is the y coordinate of the point plotted
-// Outputs: none
-void ST7735_PlotPoint(int32_t y);
-
-// *************** ST7735_PlotBar ********************
-// Used in the voltage versus time bar, plot one bar at y
-// It does not output to display until RIT128x96x4ShowPlot called
-// Inputs: y is the y coordinate of the bar plotted
-// Outputs: none
-void ST7735_PlotBar(int32_t y);
-
-// *************** ST7735_PlotdBfs ********************
-// Used in the amplitude versus frequency plot, plot bar point at y
-// 0 to 0.625V scaled on a log plot from min to max
-// It does output to display 
-// Inputs: y is the y ADC value of the bar plotted
-// Outputs: none
-void ST7735_PlotdBfs(int32_t y);
-
-// *************** ST7735_PlotNext ********************
-// Used in all the plots to step the X coordinate one pixel
-// X steps from 0 to 127, then back to 0 again
-// It does not output to display 
-// Inputs: none
-// Outputs: none
-void ST7735_PlotNext(void);
+void ST7735_OutString(struct ST7735 *st7735, char *ptr);
 
 void ST7735_SetCursor(struct ST7735 *st7735, uint32_t newX, uint32_t newY);
 
-void Output_Init(void);
+void Output_Init(struct ST7735 *st7735);
 
-void ST7735_OutChar(char ch);
+void ST7735_OutChar(struct ST7735 *st7735, char ch);
 
 #endif /* _ST7735H_ */
