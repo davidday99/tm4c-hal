@@ -72,6 +72,17 @@ void disable_ssi(struct SSI *ssi) {
     set_SSICR1SSE_low(ssi->module);
 }
 
+uint32_t read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
+    return read_SSIDR_into_array(ssi->module, data, size);
+}
+
+void write_ssi(struct SSI *ssi, uint8_t *data) {
+    int len = 0;
+    while (data[len] !=0)
+        len++;
+    write_array_SSIDR(ssi->module, data, len);
+}
+
 static void init_ssi_afsel(struct SSI *ssi) {
     enable_gpio_pin_alternate_function(ssi->tx);
     enable_gpio_pin_alternate_function(ssi->rx);

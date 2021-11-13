@@ -14,6 +14,12 @@ void init_SSICC(enum SSI_MODULE module, uint8_t cs);
 void init_SSICPSR(enum SSI_MODULE module, uint8_t cs);
 uint16_t read_SSIDR(enum SSI_MODULE module);
 void write_SSIDR(enum SSI_MODULE module, uint16_t data);
-uint8_t SSI_isbusy(enum SSI_MODULE module);
+void write_array_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t len);
+uint32_t read_SSIDR_into_array(enum SSI_MODULE module, uint8_t data[], uint32_t bytes);
+uint8_t SSI_bsy(enum SSI_MODULE module);
+uint8_t SSI_tx_full(enum SSI_MODULE module);
+uint8_t SSI_tx_empty(enum SSI_MODULE module);
+uint8_t SSI_rx_full(enum SSI_MODULE module);
+uint8_t SSI_rx_empty(enum SSI_MODULE module);
 
 #endif /* _SSI_H_ */

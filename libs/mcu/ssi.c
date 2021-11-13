@@ -77,6 +77,38 @@ void write_SSIDR(enum SSI_MODULE module, uint16_t data) {
     *(SSI[module].SSIDR) = data;
 }
 
-uint8_t SSI_isbusy(enum SSI_MODULE module) {
+void write_array_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t len) {
+    while (len > 0) {
+        while (!SSI_tx_full(module))
+            ;
+        write_SSIDR(module, data[len--]);
+    }
+}
+
+uint32_t read_SSIDR_into_array(enum SSI_MODULE module, uint8_t data[], uint32_t bytes) {
+    uint32_t i = 0;
+    while (i < bytes && SSI_bsy(module)) {
+        data[i++] = read_SSIDR(module);
+    }
+    return i;
+}
+
+uint8_t SSI_bsy(enum SSI_MODULE module) {
+    return (*(SSI[module].SSIDR) & SSI_SR_BSY) != 0;
+}
+
+uint8_t SSI_tx_full(enum SSI_MODULE module) {
     return (*(SSI[module].SSIDR) & SSI_SR_TNF) == 0;
+}
+
+uint8_t SSI_tx_empty(enum SSI_MODULE module) {
+    return (*(SSI[module].SSIDR) & SSI_SR_TFE) == 1;
+}
+
+uint8_t SSI_rx_full(enum SSI_MODULE module) {
+    return (*(SSI[module].SSIDR) & SSI_SR_RFF) != 0;
+}
+
+uint8_t SSI_rx_empty(enum SSI_MODULE module) {
+    return (*(SSI[module].SSIDR) & SSI_SR_RNE) == 0;
 }

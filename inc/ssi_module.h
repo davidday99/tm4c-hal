@@ -23,5 +23,7 @@ void init_ssi_clock_prescale_divider(struct SSI *ssi, uint8_t prescale_div);
 void init_ssi(struct SSI *ssi);
 void enable_ssi(struct SSI *ssi);
 void disable_ssi(struct SSI *ssi);
+uint32_t read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size);
+void write_ssi(struct SSI *ssi, uint8_t *data);
 
 #endif /* _SSI_MODULE_H_*/
