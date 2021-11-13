@@ -62,9 +62,6 @@ enum initRFlags{
     INITR_BLACKTAB
 };
 
-
-
-// Color definitions
 #define ST7735_BLACK   0x0000
 #define ST7735_BLUE    0xF800
 #define ST7735_RED     0x001F
@@ -74,16 +71,9 @@ enum initRFlags{
 #define ST7735_YELLOW  0x07FF
 #define ST7735_WHITE   0xFFFF
 
-// Initialization for ST7735B screens
-void ST7735_InitB(void);
-
 // Initialization for ST7735R screens (green or red tabs)
 // ST7735_InitR(INITR_GREENTAB);
 void ST7735_InitR(enum initRFlags option);
-
-//void setAddrWindow(unsigned char x0, unsigned char y0, unsigned char x1, unsigned char y1); // function is now private
-
-//void pushColor(unsigned short color); // function is now private
 
 void ST7735_DrawPixel(short x, short y, unsigned short color);
 
@@ -104,6 +94,7 @@ void ST7735_DrawBitmap(short x, short y, const unsigned short *image, short w, s
 void ST7735_DrawCharS(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
 
 void ST7735_DrawChar(int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
+
 //------------ST7735_OutString------------
 // String draw function.  
 // 16 rows (0 to 15) and 21 characters (0 to 20)

@@ -1,4 +1,3 @@
-
 #include "system.h"
 #include "ssi.h"
 #include "gpio.h"
