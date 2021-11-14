@@ -90,7 +90,6 @@
 
 #include <stdint.h>
 #include "st7735.h"
-#include "tm4c123gh6pm.h"
 #include "ssi_module.h"
 #include "gpio_module.h"
 
