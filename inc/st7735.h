@@ -43,6 +43,8 @@
 #ifndef _ST7735H_
 #define _ST7735H_
 
+#include <stdint.h>
+
 struct ST7735 {
     struct SSI *ssi;
     struct GPIO_PIN *dat_com;
@@ -63,34 +65,20 @@ extern struct ST7735 ST7735;
 #define ST7735_YELLOW  0x07FF
 #define ST7735_WHITE   0xFFFF
 
-void ST7735_init();
-
-void ST7735_DrawPixel(struct ST7735 *st7735, short x, short y, unsigned short color);
-
-void ST7735_DrawFastVLine(struct ST7735 *st7735, short x, short y, short h, unsigned short color);
-
-void ST7735_DrawFastHLine(struct ST7735 *st7735, short x, short y, short w, unsigned short color);
-
+void ST7735_init(struct ST7735 *st7735);
+void ST7735_DrawPixel(struct ST7735 *st7735, uint8_t x, uint8_t y, uint16_t color);
+void ST7735_DrawFastVLine(struct ST7735 *st7735, uint8_t x, uint8_t y, uint8_t h, uint16_t color);
+void ST7735_DrawFastHLine(struct ST7735 *st7735, uint8_t x, uint8_t y, uint8_t w, uint16_t color);
 void ST7735_FillScreen(struct ST7735 *st7735, unsigned short color);
-
-void ST7735_FillRect(struct ST7735 *st7735, short x, short y, short w, short h, unsigned short color);
-
-unsigned short ST7735_Color565(unsigned char r, unsigned char g, unsigned char b);
-
-unsigned short ST7735_SwapColor(unsigned short x);
-
+void ST7735_FillRect(struct ST7735 *st7735, uint8_t x, uint8_t y, uint8_t w, uint8_t h, uint16_t color);
+uint16_t ST7735_Color565(uint8_t r, uint8_t g, uint8_t b);
+uint16_t ST7735_SwapColor(uint16_t x);
 void ST7735_SetTextColor(struct ST7735 *st7735, uint16_t color);
-
-void ST7735_DrawCharS(struct ST7735 *st7735, int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
-
-void ST7735_DrawChar(struct ST7735 *st7735, int16_t x, int16_t y, char c, int16_t textColor, int16_t bgColor, uint8_t size);
-
+void ST7735_DrawCharS(struct ST7735 *st7735, uint8_t x, uint8_t y, char c, uint16_t textColor, uint16_t bgColor, uint8_t size);
+void ST7735_DrawChar(struct ST7735 *st7735, uint8_t x, uint8_t y, char c, uint16_t textColor, uint16_t bgColor, uint8_t size);
 void ST7735_OutString(struct ST7735 *st7735, char *ptr);
-
-void ST7735_SetCursor(struct ST7735 *st7735, uint32_t newX, uint32_t newY);
-
+void ST7735_SetCursor(struct ST7735 *st7735, uint8_t new_x, uint8_t new_y);
 void Output_Init(struct ST7735 *st7735);
-
 void ST7735_OutChar(struct ST7735 *st7735, char ch);
 
 #endif /* _ST7735H_ */

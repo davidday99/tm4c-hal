@@ -51,7 +51,7 @@ int main(void){
 
     PLL_init();
 
-    Output_Init(&ST7735);
+    ST7735_init(&ST7735);
     ST7735_OutString(&ST7735, "Hello, world!\n");
     Delay();
 
