@@ -189,7 +189,7 @@ struct ST7735 ST7735 = {
  * standard ascii 5x7 font
  * originally from glcdfont.c from Adafruit project
  */
-static const uint8_t Font[] = {
+static const uint8_t font[] = {
     0x00, 0x00, 0x00, 0x00, 0x00,
     0x3E, 0x5B, 0x4F, 0x5B, 0x3E,
     0x3E, 0x6B, 0x4F, 0x6B, 0x3E,
@@ -641,7 +641,7 @@ void ST7735_init(struct ST7735 *st7735) {
 /**
  * Set the region of the screen RAM to be modified
  * Pixel colors are sent left to right, top to bottom
- * (same as Font table is encoded; different from regular bitmap)
+ * (same as font table is encoded; different from regular bitmap)
  * Requires 11 bytes of transmission
  */
 void static setAddrWindow(struct ST7735 *st7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
@@ -828,7 +828,7 @@ void ST7735_DrawCharS(struct ST7735 *st7735, uint8_t x, uint8_t y, char c, uint1
         if (i == 5)
             line = 0x0;
         else
-            line = Font[(c * 5) + i];
+            line = font[(c * 5) + i];
         for (j = 0; j < 8; j++) {
             if (line & 0x1) {
                 if (size == 1) // default size
@@ -878,13 +878,13 @@ void ST7735_DrawChar(struct ST7735 *st7735, uint8_t x, uint8_t y, char c, uint16
         for(i = 0; i < size; i = i + 1){
             // print the columns, starting on the left
             for(col = 0; col < 5; col = col + 1){
-                if(Font[(c * 5) + col] & line){
-                // bit is set in Font, print pixel(s) in text color
+                if(font[(c * 5) + col] & line){
+                // bit is set in font, print pixel(s) in text color
                     for(j = 0; j < size; j = j + 1){
                         pushColor(st7735, textColor);
                     }
                 } else{
-                    // bit is cleared in Font, print pixel(s) in background color
+                    // bit is cleared in font, print pixel(s) in background color
                     for(j = 0; j < size; j = j + 1){
                         pushColor(st7735, bgColor);
                     }
