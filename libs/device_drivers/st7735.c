@@ -554,10 +554,7 @@ void static writecommand(struct ST7735 *st7735, uint8_t c) {
 }
 
 void static writedata(struct ST7735 *st7735, uint8_t c) {
-    while(!ssi_tx_ready(st7735->ssi))
-        ;
     set_gpio_pin_high(st7735->dat_com);
-
     write_ssi(st7735->ssi, &c, 1);
 }
 
