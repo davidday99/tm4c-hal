@@ -544,18 +544,20 @@ static const uint8_t display_init_seq[] = {
  * the SSI0 module is not initialized and enabled.
  */
 void static writecommand(struct ST7735 *st7735, uint8_t c) {
+    uint16_t c16 = (uint16_t) c;
     while (ssi_is_busy(st7735->ssi))
         ;
     set_gpio_pin_low(st7735->dat_com);
-    write_ssi(st7735->ssi, &c, 1);
+    write_ssi(st7735->ssi, &c16, 1);
 
     while (ssi_is_busy(st7735->ssi))
         ;
 }
 
 void static writedata(struct ST7735 *st7735, uint8_t c) {
+    uint16_t c16 = (uint16_t) c;
     set_gpio_pin_high(st7735->dat_com);
-    write_ssi(st7735->ssi, &c, 1);
+    write_ssi(st7735->ssi, &c16, 1);
 }
 
 void Delay1ms(uint32_t n){uint32_t volatile time;
