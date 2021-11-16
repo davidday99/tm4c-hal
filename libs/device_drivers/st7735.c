@@ -595,7 +595,6 @@ void static execute_command_sequence(struct ST7735 *st7735, const uint8_t *addr)
 }
 
 void ST7735_toggle_reset(struct ST7735 *st7735) {
-    set_gpio_pin_low(st7735->ssi->fss);
     set_gpio_pin_high(st7735->rst);
     Delay1ms(500);
     set_gpio_pin_low(st7735->rst);
