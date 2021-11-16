@@ -46,6 +46,9 @@ void init_ssi_mode(struct SSI *ssi, uint8_t clock_rate, uint8_t clock_phase,
                     uint8_t clock_polarity, uint8_t protocol, uint8_t data_size) {
     init_SSICR0(ssi->module, clock_rate, clock_phase,
                 clock_polarity, protocol, data_size - 1);
+    if (clock_polarity) {
+        enable_gpio_pin_pullup_resistor(ssi->clk);
+    }
 }
 
 void init_ssi_clock_prescale_divider(struct SSI *ssi, uint8_t prescale_div) {
@@ -133,6 +136,14 @@ uint8_t ssi_tx_ready(struct SSI *ssi) {
 
 uint8_t ssi_rx_ready(struct SSI *ssi) {
     return !SSI_rx_full(ssi->module);
+}
+
+uint8_t ssi_tx_empty(struct SSI *ssi) {
+    return SSI_tx_empty(ssi->module);
+}
+
+uint8_t ssi_rx_empty(struct SSI *ssi) {
+    return SSI_rx_empty(ssi->module);
 }
 
 

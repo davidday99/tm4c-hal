@@ -28,5 +28,7 @@ void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size);
 uint8_t ssi_is_busy(struct SSI *ssi);
 uint8_t ssi_tx_ready(struct SSI *ssi);
 uint8_t ssi_rx_ready(struct SSI *ssi);
+uint8_t ssi_tx_empty(struct SSI *ssi);
+uint8_t ssi_rx_empty(struct SSI *ssi);
 
 #endif /* _SSI_MODULE_H_*/
