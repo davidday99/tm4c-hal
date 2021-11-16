@@ -75,11 +75,11 @@ void disable_ssi(struct SSI *ssi) {
     set_SSICR1SSE_low(ssi->module);
 }
 
-uint32_t read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
+uint32_t read_ssi(struct SSI *ssi, uint16_t *data, uint32_t size) {
     return read_SSIDR_into_array(ssi->module, data, size);
 }
 
-void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
+void write_ssi(struct SSI *ssi, uint16_t *data, uint32_t size) {
     write_array_SSIDR(ssi->module, data, size);
 }
 
