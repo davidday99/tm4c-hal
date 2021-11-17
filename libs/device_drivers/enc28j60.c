@@ -225,8 +225,63 @@ static void init_rx_buffer(struct ENC28J60 *enc28j60) {
 }
 
 static void init_receive_filters(struct ENC28J60 *enc28j60) {
-    write_control_register(enc28j60, ECON1, 0x01); // switch to bank 1
+    uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
+    bit_field_clear(enc28j60, ECON1, 0xFC); // switch to bank 1
+    bit_field_set(enc28j60, ECON1, 1);
     write_control_register(enc28j60, ERXFCON, 0);  // enable promiscuous mode (receive all packets)
+    bit_field_clear(enc28j60, ECON1, 0xFC);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+}
+
+static void init_mac_registers(struct ENC28J60 *enc28j60) {
+    uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
+    bit_field_clear(enc28j60, ECON1, 0xFC); // switch to bank 2
+    bit_field_set(enc28j60, ECON1, 2);
+    bit_field_set(enc28j60, MACON1, 0xD);  // enable receiving of frames + flow control
+    
+    // enable padding, append CRC, no proprietary header, no large frames, check frame length, full-duplex
+    write_control_register(enc28j60, MACON3, 0xB3);
+    bit_field_set(enc28j60, MACON4, 0x40);  // init defer and backoff settings, applies to half-duplex only? needed?
+
+    write_control_register(enc28j60, MAMXFLL, 0xEE);  // max frame size is 1518 bytes
+    write_control_register(enc28j60, MAMXFLH, 0x05);
+
+    write_control_register(enc28j60, MABBIPG, 0x15);  // back-to-back inter-packet gap of IEEE specified 9.6us
+
+    write_control_register(enc28j60, MAIPGL, 0x12);  // non-back-to-back interpacket gap, datasheet says 12h is typical
+
+    // init MAC address to A0-CD-DF-01-23-45, 0 in LSB if first byte indicates unicast address
+    write_control_register(enc28j60, MAADR1, 0xA0);
+    write_control_register(enc28j60, MAADR2, 0xCD);
+    write_control_register(enc28j60, MAADR3, 0xDF);
+    write_control_register(enc28j60, MAADR4, 0x01);
+    write_control_register(enc28j60, MAADR5, 0x23);
+    write_control_register(enc28j60, MAADR6, 0x45);
+
+    bit_field_clear(enc28j60, ECON1, 0xFC);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+}
+
+static void init_phy_registers(struct ENC28J60 *enc28j60) {
+    uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
+    bit_field_clear(enc28j60, ECON1, 0xFC); // switch to bank 2
+    bit_field_set(enc28j60, ECON1, 2);
+
+
+    write_control_register(enc28j60, MIREGADR, 0);  // set PHCON1.PDPXMD to full-duplex to match MACON3.FULDPX
+    write_control_register(enc28j60, MIWRH, 1);
+
+
+    bit_field_clear(enc28j60, ECON1, 0xFC);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+}
+
+void enable_receive(struct ENC28J60 *enc28j60) {
+    bit_field_set(enc28j60, ECON1, 4);
+}
+
+void disable_receive(struct ENC28J60 *enc28j60) {
+    bit_field_clear(enc28j60, ECON1, ~4);
 }
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
@@ -236,6 +291,9 @@ uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
 
     while ((read_control_register(enc28j60, ESTAT) & 1) == 0)  // wait for OST
         ;
+
+    init_mac_registers(enc28j60);
+    init_phy_registers(enc28j60);
 
     return read_control_register(enc28j60, ESTAT);
 }

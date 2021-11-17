@@ -12,6 +12,8 @@ struct ENC28J60 {
 extern struct ENC28J60 ENC28J60;
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60);
+void enable_receive(struct ENC28J60 *enc28j60);
+void disable_receive(struct ENC28J60 *enc28j60);
 void ENC28J60_read_data(struct ENC28J60 *enc28j60, uint8_t data[], uint32_t size);
 void ENC28J60_write_data(struct ENC28J60 *enc28j60, uint8_t *data, uint32_t size);
 
