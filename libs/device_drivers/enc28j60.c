@@ -159,13 +159,18 @@ static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uin
     return ethreg ? data[1] : data[2];
 }
 
-static void read_buffer_memory(struct ENC28J60 *enc28j60, uint16_t *data, uint8_t bytes) {
+void read_buffer_memory(struct ENC28J60 *enc28j60, uint16_t *data, uint8_t bytes) {
     uint8_t cmd = RBM_OPCODE | RBM_ARG0;
-    uint16_t dummy[bytes + 1];
+    uint16_t dummy[2];
     dummy[0] = (uint16_t) cmd;
+    dummy[2] = NOP;
     set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, dummy, bytes + 1);
-    read_ssi(enc28j60->ssi, data, bytes);
+    write_ssi(enc28j60->ssi, dummy, 1);
+    read_ssi(enc28j60->ssi, data, 1);
+    for (uint16_t i = 0; i < bytes; i++) {
+        write_ssi(enc28j60->ssi, &dummy[2], 1);
+        read_ssi(enc28j60->ssi, &data[i], 1);
+    }
     set_gpio_pin_high(enc28j60->cs);
 }
 
