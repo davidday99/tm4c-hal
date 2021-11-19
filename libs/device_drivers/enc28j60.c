@@ -9,8 +9,9 @@
 #define WCR_OPCODE 0x40
 #define WBM_OPCODE 0x60
 #define BFS_OPCODE 0x80
-#define BFC_OPCODE 0x50
+#define BFC_OPCODE 0xA0
 #define SRC_OPCODE 0xE0
+#define NOP 0xF0  // any opcode not mapped to an instruction
 
 #define RBM_ARG0 0x1A
 #define WBM_ARG0 0x1A
@@ -118,11 +119,23 @@ void delay_50ns(uint32_t n) {
     }
 }
 
+void write_nop(struct ENC28J60 *enc28j60) {
+    uint16_t datapacked[1];
+    datapacked[0] = NOP;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, datapacked, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
+    set_gpio_pin_high(enc28j60->cs);
+    while (!ssi_rx_empty(enc28j60->ssi)) 
+        read_ssi(enc28j60->ssi, datapacked, 1);
+}
+
 static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg) {
     reg = (reg & 0x1F) | RCR_OPCODE;
     uint16_t dummy[2];
     dummy[0] = (uint16_t) reg;
-    dummy[1] = 0;
+    dummy[1] = NOP;
     uint16_t data[2];
     set_gpio_pin_low(enc28j60->cs);
     write_ssi(enc28j60->ssi, dummy, 2);
@@ -216,28 +229,37 @@ static void ENC28J60_init_peripherals(struct ENC28J60 *enc28j60) {
 }
 
 static void init_rx_buffer(struct ENC28J60 *enc28j60) {
+    uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
+    bit_field_set(enc28j60, ECON1, 0);
+
     write_control_register(enc28j60, ERXSTL, 0);  // Rx buffer start
     write_control_register(enc28j60, ERXSTH, 0);
     write_control_register(enc28j60, ERXNDL, 0xFE);  // Rx buffer end
     write_control_register(enc28j60, ERXNDH, 0x0F);
-    write_control_register(enc28j60, ERXRDPTL, 0);  // set rx read ptr to start; this is only for tracking
+
+    // set rx read ptr to start; data cannot be written past this, and it must be incremented manually
+    write_control_register(enc28j60, ERXRDPTL, 0);  
     write_control_register(enc28j60, ERXRDPTH, 0);
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
 }
 
 static void init_receive_filters(struct ENC28J60 *enc28j60) {
     uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
-    bit_field_clear(enc28j60, ECON1, 0xFC); // switch to bank 1
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 1
     bit_field_set(enc28j60, ECON1, 1);
     write_control_register(enc28j60, ERXFCON, 0);  // enable promiscuous mode (receive all packets)
-    bit_field_clear(enc28j60, ECON1, 0xFC);  // restore bank to previous value
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
 }
 
 static void init_mac_registers(struct ENC28J60 *enc28j60) {
     uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
-    bit_field_clear(enc28j60, ECON1, 0xFC); // switch to bank 2
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
     bit_field_set(enc28j60, ECON1, 2);
-    bit_field_set(enc28j60, MACON1, 0xD);  // enable receiving of frames + flow control
+    bit_field_set(enc28j60, MACON1, 0xF);  // enable receiving of all frames + flow control
     
     // enable padding, append CRC, no proprietary header, no large frames, check frame length, full-duplex
     write_control_register(enc28j60, MACON3, 0xB3);
@@ -253,18 +275,18 @@ static void init_mac_registers(struct ENC28J60 *enc28j60) {
     // init MAC address to A0-CD-DF-01-23-45, 0 in LSB if first byte indicates unicast address
     write_control_register(enc28j60, MAADR1, 0xA0);
     write_control_register(enc28j60, MAADR2, 0xCD);
-    write_control_register(enc28j60, MAADR3, 0xDF);
+    write_control_register(enc28j60, MAADR3, 0xEF);
     write_control_register(enc28j60, MAADR4, 0x01);
     write_control_register(enc28j60, MAADR5, 0x23);
     write_control_register(enc28j60, MAADR6, 0x45);
 
-    bit_field_clear(enc28j60, ECON1, 0xFC);  // restore bank to previous value
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
 }
 
 static void init_phy_registers(struct ENC28J60 *enc28j60) {
     uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
-    bit_field_clear(enc28j60, ECON1, 0xFC); // switch to bank 2
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
     bit_field_set(enc28j60, ECON1, 2);
 
 
@@ -272,9 +294,37 @@ static void init_phy_registers(struct ENC28J60 *enc28j60) {
     write_control_register(enc28j60, MIWRH, 1);
 
 
-    bit_field_clear(enc28j60, ECON1, 0xFC);  // restore bank to previous value
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
 }
+
+static uint8_t init_success(struct ENC28J60 *enc28j60) {
+    uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
+    bit_field_set(enc28j60, ECON1, 0);
+
+    uint8_t success = ((uint16_t) read_control_register(enc28j60, ERXSTL) |
+                        (read_control_register(enc28j60, ERXSTH) << 8)) == 0;
+    success &= ((uint16_t) read_control_register(enc28j60, ERXNDL) |
+                        (read_control_register(enc28j60, ERXNDH) << 8)) == 0x0FFE;
+    success &= ((uint16_t) read_control_register(enc28j60, ERXRDPTL) |
+                        (read_control_register(enc28j60, ERXRDPTH) << 8)) == 0;
+ 
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
+    bit_field_set(enc28j60, ECON1, 2);                    
+
+    success &= read_control_register(enc28j60, MACON1) == 0xF;
+    success &= read_control_register(enc28j60, MACON3) == 0xB3;
+    success &= read_control_register(enc28j60, MACON4) == 0x40;
+
+
+
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+
+    return success;
+} 
 
 void enable_receive(struct ENC28J60 *enc28j60) {
     bit_field_set(enc28j60, ECON1, 4);
@@ -282,6 +332,16 @@ void enable_receive(struct ENC28J60 *enc28j60) {
 
 void disable_receive(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, ~4);
+}
+
+uint8_t get_packet_count(struct ENC28J60 *enc28j60) {
+    uint8_t bank = read_control_register(enc28j60, ECON1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
+    bit_field_set(enc28j60, ECON1, 1);
+    uint8_t count = read_control_register(enc28j60, ERDPTL);
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+    return count;
 }
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
@@ -295,7 +355,7 @@ uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     init_mac_registers(enc28j60);
     init_phy_registers(enc28j60);
 
-    return read_control_register(enc28j60, ESTAT);
+    return init_success(enc28j60);
 }
 
 void ENC28J60_read_data(struct ENC28J60 *enc28j60, uint8_t data[], uint32_t size) {
