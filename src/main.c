@@ -10,8 +10,8 @@ extern void DisableInterrupts();
 extern void StartCritical();
 extern void EndCritical();
 
-void Delay(void){unsigned long volatile time;
-    time = 8000000;
+void Delay1s(void){
+    unsigned long volatile time = 2400000;
     while(time){
         time--;
     }
@@ -60,27 +60,43 @@ int main(void){
 
     PLL_init();
 
-    ST7735_init(&ST7735);
-    ST7735_OutString(&ST7735, "Read value: \n");
-
     char buf[20];
 
+    ST7735_init(&ST7735);
+
     uint8_t read = ENC28J60_init(&ENC28J60);
-
-    hex_to_str(read, buf);
-    ST7735_OutString(&ST7735, buf);
-    ST7735_OutString(&ST7735, "\n");
-
-    while (1) {
-        ST7735_OutString(&ST7735, ".");
-        Delay();
-        ST7735_OutString(&ST7735, ".");
-        Delay();
-        ST7735_OutString(&ST7735, ".");
-        Delay();
-        ST7735_OutChar(&ST7735, 8);
-        ST7735_OutChar(&ST7735, 8);
-        ST7735_OutChar(&ST7735, 8);
+    
+    if (read) {
+        ST7735_OutString(&ST7735, "ENC initialized.\n");
+        ST7735_OutString(&ST7735, "Enabling receive.\n");
+        enable_receive(&ENC28J60) ? ST7735_OutString(&ST7735, "Receive enabled.\n") : 
+                                    ST7735_OutString(&ST7735, "Could not enable.\n");
+    }
+    else {
+        ST7735_OutString(&ST7735, "Could not init.\n");
     }
 
+    ST7735_OutString(&ST7735, "Waiting for frames.\n");
+    
+    uint8_t prev = 0;
+    while (1) {
+        read = get_packet_count(&ENC28J60);
+        if (prev == read) {
+            ST7735_OutString(&ST7735, ".");
+            Delay1s();
+            ST7735_OutString(&ST7735, ".");
+            Delay1s();
+            ST7735_OutString(&ST7735, ".");
+            Delay1s();
+            ST7735_OutChar(&ST7735, 8);
+            ST7735_OutChar(&ST7735, 8);
+            ST7735_OutChar(&ST7735, 8);
+        } else {
+            hex_to_str(read, buf);
+            prev = read;
+            ST7735_OutString(&ST7735, "Frame ");
+            ST7735_OutString(&ST7735, buf);        
+            ST7735_OutString(&ST7735, " received!\n");
+        }
+    }
 }
