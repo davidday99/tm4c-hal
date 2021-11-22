@@ -43,8 +43,8 @@ uint8_t read_rx_frame(struct enet_frame *frame) {
         return 0;
 
     uint16_t i = 0;
-    uint8_t *readptr = &rx_frame_buffer[rxrdptr];
-    uint8_t *writeptr = &frame;
+    uint8_t *readptr = (uint8_t*) &rx_frame_buffer[rxrdptr];
+    uint8_t *writeptr = (uint8_t*) &frame;
     while (i++ < sizeof(struct enet_frame))
         *writeptr++ = *readptr++;
 
