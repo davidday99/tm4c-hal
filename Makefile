@@ -48,6 +48,7 @@ CC = arm-none-eabi-gcc #compiler
 LD = arm-none-eabi-ld #linker
 OBJCOPY = arm-none-eabi-objcopy #final executable builder
 FLASHER = lm4flash #flashing utility
+DEBUGGER = arm-none-eabi-gdb
 RM      = rm -rf
 MKDIR   = @mkdir -p $(@D) #creates folders if not present
 
@@ -59,8 +60,6 @@ CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c
 #LINKER FLAGS
 LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler 
 
-a = echo $(OBJS)
-$(info $(a))
 
 # Rules to build bin
 all: bin/$(PROJECT).bin
@@ -88,6 +87,9 @@ bin/$(PROJECT).bin: bin/$(PROJECT).elf    #debug symbols for GNU GDB stripped by
 #Flashes bin to TM4C
 flash:
 	$(FLASHER) -S $(DEV) bin/$(PROJECT).bin
+
+debug:
+	$(DEBUGGER) --tui bin/$(PROJECT).elf -ex "target remote :3333" -ex "monitor reset halt"
 
 #remove object and bin files
 clean:
