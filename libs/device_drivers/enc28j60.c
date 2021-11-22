@@ -159,7 +159,7 @@ static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uin
     return ethreg ? data[1] : data[2];
 }
 
-void read_buffer_memory(struct ENC28J60 *enc28j60, uint16_t *data, uint8_t bytes) {
+void read_buffer_memory(struct ENC28J60 *enc28j60, uint16_t *data, uint32_t bytes) {
     uint8_t cmd = RBM_OPCODE | RBM_ARG0;
     uint16_t dummy[2];
     dummy[0] = (uint16_t) cmd;
