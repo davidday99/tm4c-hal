@@ -398,13 +398,13 @@ static uint8_t init_success(struct ENC28J60 *enc28j60) {
     return success;
 } 
 
-uint8_t enable_receive(struct ENC28J60 *enc28j60) {
+uint8_t ENC28J60_enable_receive(struct ENC28J60 *enc28j60) {
     bit_field_set(enc28j60, ECON1, 4);
 
     return (read_control_register(enc28j60, ECON1, 1) & 4) != 0; 
 }
 
-uint8_t disable_receive(struct ENC28J60 *enc28j60) {
+uint8_t ENC28J60_disable_receive(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, ~4);
 
     return (read_control_register(enc28j60, ECON1, 1) & 4) == 0; 
@@ -418,6 +418,15 @@ uint8_t get_packet_count(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
     return count;
+}
+
+void ENC28J60_enable_loopback_mode(struct ENC28J60 *enc28j60) {
+    uint16_t current;
+
+    current = read_phy_register(enc28j60, PHCON1);
+    current |= 0x4000;
+
+    write_phy_register(enc28j60, PHCON1, current);
 }
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {

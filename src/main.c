@@ -72,10 +72,10 @@ int main(void){
     if (read) {
         ST7735_OutString(&ST7735, "ENC initialized.\n");
         ST7735_OutString(&ST7735, "Enabling receive.\n");
-        enable_receive(&ENC28J60) ? ST7735_OutString(&ST7735, "Receive enabled.\n") : 
+        ENC28J60_enable_receive(&ENC28J60) ? ST7735_OutString(&ST7735, "Receive enabled.\n") : 
                                     ST7735_OutString(&ST7735, "Could not enable.\n");
-    }
-    else {
+        ENC28J60_enable_loopback_mode(&ENC28J60);   
+    } else {
         ST7735_OutString(&ST7735, "Could not init.\n");
     }
 
