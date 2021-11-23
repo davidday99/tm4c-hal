@@ -14,7 +14,7 @@ extern struct ENC28J60 ENC28J60;
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60);
 uint8_t enable_receive(struct ENC28J60 *enc28j60);
 uint8_t disable_receive(struct ENC28J60 *enc28j60);
-uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t data[], uint32_t size);
+uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint16_t data[]);
 void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint32_t size);
 uint8_t get_packet_count(struct ENC28J60 *enc28j60);
 void read_buffer_memory(struct ENC28J60 *enc28j60, uint16_t *data, uint32_t bytes);

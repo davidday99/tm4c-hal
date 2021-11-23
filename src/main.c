@@ -62,6 +62,7 @@ int main(void){
 
     char buf[20];
     uint16_t frame[1518];
+    uint32_t len;
 
     ST7735_init(&ST7735);
 
@@ -98,7 +99,7 @@ int main(void){
             ST7735_OutString(&ST7735, "Frame ");
             ST7735_OutString(&ST7735, buf);        
             ST7735_OutString(&ST7735, " received!\n");
-            read_buffer_memory(&ENC28J60, frame, 1518);
+            len = ENC28J60_read_frame(&ENC28J60, frame);
         }
     }
 }

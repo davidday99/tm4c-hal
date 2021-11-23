@@ -163,15 +163,18 @@ void read_buffer_memory(struct ENC28J60 *enc28j60, uint16_t *data, uint32_t byte
     uint8_t cmd = RBM_OPCODE | RBM_ARG0;
     uint16_t dummy[2];
     dummy[0] = (uint16_t) cmd;
-    dummy[2] = NOP;
+    dummy[1] = NOP;
     set_gpio_pin_low(enc28j60->cs);
     write_ssi(enc28j60->ssi, dummy, 1);
     read_ssi(enc28j60->ssi, data, 1);
+    uint16_t j = 0;
     for (uint16_t i = 0; i < bytes; i++) {
-        write_ssi(enc28j60->ssi, &dummy[2], 1);
-        read_ssi(enc28j60->ssi, &data[i], 1);
+        write_ssi(enc28j60->ssi, &dummy[1], 1);
+        read_ssi(enc28j60->ssi, &data[j++], 1);
     }
     set_gpio_pin_high(enc28j60->cs);
+    while (!ssi_rx_empty(enc28j60->ssi))
+        read_ssi(enc28j60->ssi, &data[j++], 1);
 }
 
 static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint16_t data) {
@@ -431,10 +434,10 @@ uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     return init_success(enc28j60);
 }
 
-uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t data[], uint32_t size) {
+uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint16_t data[]) {
     uint16_t len;
-    uint8_t next_frame[2];
-    uint8_t rsv[4];
+    uint16_t next_frame[3];
+    uint16_t rsv[5];
 
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
@@ -443,11 +446,11 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t data[], uint32_t
     read_buffer_memory(enc28j60, next_frame, 2);
     read_buffer_memory(enc28j60, rsv, 4);
 
-    len = rsv[0] | (rsv[1] << 8);
-    
+    len = (rsv[1] & 0xFF) | (rsv[2] << 8);
+
     read_buffer_memory(enc28j60, data, len);
-    write_control_register(enc28j60, ERXRDPTL, next_frame[0]);
-    write_control_register(enc28j60, ERXRDPTH, next_frame[1]);
+    write_control_register(enc28j60, ERXRDPTL, next_frame[1]);
+    write_control_register(enc28j60, ERXRDPTH, next_frame[2]);
     
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
