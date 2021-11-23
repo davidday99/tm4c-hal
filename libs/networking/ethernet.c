@@ -23,16 +23,18 @@ uint8_t write_rx_frame(uint16_t *data, uint16_t len) {
     for (i = 0; i < DEST_LEN; i++)
         rx_frame_buffer[rxwrptr].dest[i] = data[i];
 
-    for (; i < DEST_LEN + SRC_LEN; i++)
-        rx_frame_buffer[rxwrptr].src[i] = data[i];
+    for (uint8_t j = 0; j < SRC_LEN; i++, j++)
+        rx_frame_buffer[rxwrptr].src[j] = data[i];
 
     rx_frame_buffer[rxwrptr].type = data[i++];
+    rx_frame_buffer[rxwrptr].type |= (data[i++] << 8);
 
-    for (; i < len - (DEST_LEN + SRC_LEN + TYPE_LEN + FCS_LEN); i++)
-        rx_frame_buffer[rxwrptr].data[i] = data[i]; 
 
-    for (; i < len; i++)
-        rx_frame_buffer[rxwrptr].fcs[i] = data[i];
+    for (uint16_t j = 0; j < len; i++, j++)
+        rx_frame_buffer[rxwrptr].data[j] = data[i]; 
+
+    for (uint8_t j = 0; j < FCS_LEN; i++, j++)
+        rx_frame_buffer[rxwrptr].fcs[j] = data[i];
         
     rxwrptr = (rxwrptr + 1) % ENET_RX_BUFFER_SIZE;
     return 1;

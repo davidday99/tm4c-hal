@@ -4,6 +4,7 @@
 #include "tm4c123gh6pm.h"
 #include "st7735.h"
 #include "enc28j60.h"
+#include "ethernet.h"
 
 extern void EnableInterrupts();
 extern void DisableInterrupts();
@@ -100,6 +101,7 @@ int main(void){
             ST7735_OutString(&ST7735, buf);        
             ST7735_OutString(&ST7735, " received!\n");
             len = ENC28J60_read_frame(&ENC28J60, frame);
+            write_rx_frame(frame, len - 18);
         }
     }
 }
