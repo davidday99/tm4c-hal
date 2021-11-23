@@ -194,12 +194,14 @@ static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint1
 
 static void write_buffer_memory(struct ENC28J60 *enc28j60, uint16_t *data, uint8_t bytes) {
     uint8_t cmd = WBM_OPCODE | WBM_ARG0;
-    uint16_t dummy[bytes + 1];
-    dummy[0] = (uint16_t) cmd;
+    uint16_t dummy[1];
+    dummy[0] = cmd;
     set_gpio_pin_low(enc28j60->cs);
     write_ssi(enc28j60->ssi, dummy, 1);
     write_ssi(enc28j60->ssi, data, bytes);
     set_gpio_pin_high(enc28j60->cs);
+    while (!ssi_rx_empty(enc28j60->ssi)) 
+        read_ssi(enc28j60->ssi, dummy, 1);
 }
 
 static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
@@ -251,13 +253,13 @@ static void ENC28J60_init_peripherals(struct ENC28J60 *enc28j60) {
     set_gpio_pin_high(enc28j60->cs);
 }
 
-static void init_rx_buffer(struct ENC28J60 *enc28j60) {
+static void init_buffers(struct ENC28J60 *enc28j60) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
     bit_field_set(enc28j60, ECON1, 0);
 
-    write_control_register(enc28j60, ERXSTL, 0);  // Rx buffer start
-    write_control_register(enc28j60, ERXSTH, 0);
+    write_control_register(enc28j60, ERXSTL, 0xFA);  // Rx buffer start
+    write_control_register(enc28j60, ERXSTH, 0x05);
     write_control_register(enc28j60, ERXNDL, 0xFF);  // Rx buffer end
     write_control_register(enc28j60, ERXNDH, 0x1F);
 
@@ -267,6 +269,12 @@ static void init_rx_buffer(struct ENC28J60 *enc28j60) {
     // set rx read ptr to start; data cannot be written past this, and it must be incremented manually
     write_control_register(enc28j60, ERXRDPTL, 0xFF);  
     write_control_register(enc28j60, ERXRDPTH, 0x1F);
+
+    // tx buffer is below rx buffer
+    write_control_register(enc28j60, ETXSTL, 0);
+    write_control_register(enc28j60, ETXSTH, 0);
+    write_control_register(enc28j60, ETXNDL, 0);
+    write_control_register(enc28j60, ETXNDH, 0);
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
@@ -361,7 +369,8 @@ static uint8_t init_success(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
     bit_field_set(enc28j60, ECON1, 0);
 
-    uint8_t success = ((uint16_t) (read_control_register(enc28j60, ERXSTL, 1) | (read_control_register(enc28j60, ERXSTH, 1) << 8))) == 0;
+    uint8_t success = ((uint16_t) (read_control_register(enc28j60, ERXSTL, 1) | 
+                        (read_control_register(enc28j60, ERXSTH, 1) << 8))) == 0x05FA;
     success &= ((uint16_t) (read_control_register(enc28j60, ERXNDL, 1) |
                         (read_control_register(enc28j60, ERXNDH, 1) << 8))) == 0x1FFF;
     success &= ((uint16_t) read_control_register(enc28j60, ERXRDPTL, 1) |
@@ -429,9 +438,32 @@ void ENC28J60_enable_loopback_mode(struct ENC28J60 *enc28j60) {
     write_phy_register(enc28j60, PHCON1, current);
 }
 
+void ENC28J60_get_tx_status_vec(struct ENC28J60 *enc28j60, uint16_t *tsv) {
+    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
+    bit_field_set(enc28j60, ECON1, 0);
+
+    uint16_t current_ptr = read_control_register(enc28j60, ERDPTL, 1) |
+                            (read_control_register(enc28j60, ERDPTH, 1) << 8);
+
+    uint16_t tx_end_ptr = (read_control_register(enc28j60, ETXNDL, 1) |
+                            (read_control_register(enc28j60, ETXNDH, 1) << 8)) + 1;
+
+    write_control_register(enc28j60, ERDPTL, tx_end_ptr & 0xFF);
+    write_control_register(enc28j60, ERDPTH, (tx_end_ptr & 0xFF00) >> 8);
+
+    read_buffer_memory(enc28j60, tsv, 7);
+
+    write_control_register(enc28j60, ERDPTL, current_ptr & 0xFF);  // restore ERDPT
+    write_control_register(enc28j60, ERDPTH, (current_ptr & 0xFF00) >> 8);
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+}
+
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     ENC28J60_init_peripherals(enc28j60);
-    init_rx_buffer(enc28j60);
+    init_buffers(enc28j60);
     init_receive_filters(enc28j60);
 
     while ((read_control_register(enc28j60, ESTAT, 1) & 1) == 0)  // wait for OST
@@ -467,6 +499,38 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint16_t data[]) {
     return len;
 }
 
-void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint32_t size) {
-    return;
+void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint16_t *data, uint32_t size) {
+    uint16_t control[1] = {0};
+    uint16_t tsv[8];
+    uint16_t start_addr;
+    uint16_t rx_start_addr;
+    
+    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
+    bit_field_set(enc28j60, ECON1, 0);
+
+    start_addr = read_control_register(enc28j60, ETXNDL, 1) |
+                    (read_control_register(enc28j60, ETXNDH, 1) << 8);
+
+    rx_start_addr = read_control_register(enc28j60, ERXSTL, 1) |
+                    (read_control_register(enc28j60, ERXSTH, 1) << 8);
+
+
+    start_addr = (start_addr + size + 7 < rx_start_addr && start_addr > 0) ? start_addr + 8 : 0; 
+
+    write_control_register(enc28j60, ETXSTL, start_addr & 0xFF);
+    write_control_register(enc28j60, ETXSTH, (start_addr & 0xFF00) >> 8);
+
+    write_control_register(enc28j60, ETXNDL, (start_addr + size) & 0xFF);
+    write_control_register(enc28j60, ETXNDH, ((start_addr + size) & 0xFF00) >> 8);
+
+    write_buffer_memory(enc28j60, control, 1);
+    write_buffer_memory(enc28j60, data, size);
+
+    bit_field_set(enc28j60, ECON1, 0x08);
+
+    ENC28J60_get_tx_status_vec(enc28j60, tsv);
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
 }

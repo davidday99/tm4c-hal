@@ -18,6 +18,27 @@ void Delay1s(void){
     }
 }
 
+uint16_t transmit[16] = {
+    0xAB,
+    0xCD,
+    0xEF,
+    0x01,
+    0x02,
+    0x03,
+    0xC0,
+    0x0C,
+    0xC0,
+    0x0C,
+    0xC0,
+    0x0C,
+    0xBE,
+    0xEF,
+    0xFF,
+    0xFF
+};
+
+
+
 char HEX_CONV[] = "abcdef";
 
 void print_line(char *s) {
@@ -83,7 +104,9 @@ int main(void){
     
     uint8_t prev = 0;
     while (1) {
-        read = get_packet_count(&ENC28J60);
+        ENC28J60_write_frame(&ENC28J60, transmit, 16);
+        read += 1;
+        // read = get_packet_count(&ENC28J60);
         if (prev == read) {
             ST7735_OutString(&ST7735, ".");
             Delay1s();
