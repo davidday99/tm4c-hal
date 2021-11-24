@@ -18,7 +18,7 @@ void Delay1s(void){
     }
 }
 
-uint16_t transmit[16] = {
+uint8_t transmit[16] = {
     0xAB,
     0xCD,
     0xEF,
@@ -83,7 +83,7 @@ int main(void){
     PLL_init();
 
     char buf[20];
-    uint16_t frame[1518];
+    uint8_t frame[1518];
     uint32_t len;
 
     ST7735_init(&ST7735);

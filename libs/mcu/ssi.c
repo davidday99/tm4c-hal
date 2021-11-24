@@ -68,16 +68,16 @@ void init_SSICPSR(enum SSI_MODULE module, uint8_t psdvsr) {
     *(SSI[module].SSICPSR) |= psdvsr;
 }
 
-uint16_t read_SSIDR(enum SSI_MODULE module) {
-    uint16_t data = *(SSI[module].SSIDR) & SSI_DR_DATA_M;
+uint8_t read_SSIDR(enum SSI_MODULE module) {
+    uint8_t data = *(SSI[module].SSIDR) & SSI_DR_DATA_M;
     return data;
 }
 
-void write_SSIDR(enum SSI_MODULE module, uint16_t data) {
+void write_SSIDR(enum SSI_MODULE module, uint8_t data) {
     *(SSI[module].SSIDR) = data;
 }
 
-void write_array_SSIDR(enum SSI_MODULE module, uint16_t *data, uint32_t len) {
+void write_array_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t len) {
     uint32_t i = 0;
     while (len-- > 0) {
         while (SSI_tx_full(module))
@@ -86,7 +86,7 @@ void write_array_SSIDR(enum SSI_MODULE module, uint16_t *data, uint32_t len) {
     }
 }
 
-uint32_t read_SSIDR_into_array(enum SSI_MODULE module, uint16_t data[], uint32_t bytes) {
+uint32_t read_SSIDR_into_array(enum SSI_MODULE module, uint8_t *data, uint32_t bytes) {
     uint32_t i = 0;
     while (i < bytes && !SSI_rx_empty(module)) {
         data[i++] = read_SSIDR(module);

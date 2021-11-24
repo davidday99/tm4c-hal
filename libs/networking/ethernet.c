@@ -15,7 +15,7 @@ static uint8_t txrdptr;
 static uint8_t txwrptr;
 
 
-uint8_t write_rx_frame(uint16_t *data, uint16_t len) {
+uint8_t write_rx_frame(uint8_t *data, uint16_t len) {
     if (rxrdptr > rxwrptr)  // FIFO full
         return 0;
 

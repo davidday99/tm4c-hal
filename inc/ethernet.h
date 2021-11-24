@@ -20,7 +20,7 @@ struct enet_frame {
     uint8_t fcs[4];
 } __attribute__((packed));
 
-uint8_t write_rx_frame(uint16_t *data, uint16_t len);
+uint8_t write_rx_frame(uint8_t *data, uint16_t len);
 uint8_t read_rx_frame(struct enet_frame *frame);
 
 #endif /* _ETHERNET_H_ */
