@@ -5,6 +5,7 @@
 #include "st7735.h"
 #include "enc28j60.h"
 #include "ethernet.h"
+#include "lcd.h"
 
 extern void EnableInterrupts();
 extern void DisableInterrupts();
@@ -86,21 +87,23 @@ int main(void){
     uint8_t frame[1518];
     uint32_t len;
 
-    ST7735_init(&ST7735);
+
+    LCD lcd;
+    lcd_init(&lcd);
 
     uint8_t read = ENC28J60_init(&ENC28J60);
     
     if (read) {
-        ST7735_OutString(&ST7735, "ENC initialized.\n");
-        ST7735_OutString(&ST7735, "Enabling receive.\n");
-        ENC28J60_enable_receive(&ENC28J60) ? ST7735_OutString(&ST7735, "Receive enabled.\n") : 
-                                    ST7735_OutString(&ST7735, "Could not enable.\n");
+        lcd_write(&lcd, "ENC initialized.\n");
+        lcd_write(&lcd, "Enabling receive.\n");
+        ENC28J60_enable_receive(&ENC28J60) ? lcd_write(&lcd, "Receive enabled.\n") : 
+                                    lcd_write(&lcd, "Could not enable.\n");
         ENC28J60_enable_loopback_mode(&ENC28J60);   
     } else {
-        ST7735_OutString(&ST7735, "Could not init.\n");
+        lcd_write(&lcd, "Could not init.\n");
     }
 
-    ST7735_OutString(&ST7735, "Waiting for frames.\n");
+    lcd_write(&lcd, "Waiting for frames.\n");
     
     uint8_t prev = 0;
     while (1) {
@@ -108,21 +111,19 @@ int main(void){
         read += 1;
         // read = get_packet_count(&ENC28J60);
         if (prev == read) {
-            ST7735_OutString(&ST7735, ".");
+            lcd_write(&lcd, ".");
             Delay1s();
-            ST7735_OutString(&ST7735, ".");
+            lcd_write(&lcd, ".");
             Delay1s();
-            ST7735_OutString(&ST7735, ".");
+            lcd_write(&lcd, ".");
             Delay1s();
-            ST7735_OutChar(&ST7735, 8);
-            ST7735_OutChar(&ST7735, 8);
-            ST7735_OutChar(&ST7735, 8);
+            lcd_write(&lcd, "%b", 8);
+            lcd_write(&lcd, "%b", 8);
+            lcd_write(&lcd, "%b", 8);
         } else {
             hex_to_str(read, buf);
             prev = read;
-            ST7735_OutString(&ST7735, "Frame ");
-            ST7735_OutString(&ST7735, buf);        
-            ST7735_OutString(&ST7735, " received!\n");
+            lcd_write(&lcd, "Frame %d received!\n", read);
             len = ENC28J60_read_frame(&ENC28J60);
         }
     }
