@@ -5,7 +5,7 @@ typedef struct LCD {
     void *model;
 } LCD;
 
-void lcd_init(struct LCD *lcd);
-void lcd_write(struct LCD *lcd, char *s, ...);
+void lcd_init(LCD *lcd);
+void lcd_write(LCD *lcd, char *s, ...);
 
 #endif /* _LCD_H_ */
