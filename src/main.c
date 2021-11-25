@@ -4,6 +4,7 @@
 #include "tm4c123gh6pm.h"
 #include "st7735.h"
 #include "enc28j60.h"
+#include "enc.h"
 #include "ethernet.h"
 #include "lcd.h"
 
@@ -89,9 +90,10 @@ int main(void){
 
 
     LCD lcd;
+    ENC enc;
     lcd_init(&lcd);
 
-    uint8_t read = ENC28J60_init(&ENC28J60);
+    uint8_t read = enc_init(&enc);
     
     if (read) {
         lcd_write(&lcd, "ENC initialized.\n");
@@ -122,7 +124,7 @@ int main(void){
             hex_to_str(read, buf);
             prev = read;
             lcd_write(&lcd, "Frame %d received!\n", read);
-            len = ENC28J60_read_frame(&ENC28J60);
+            enc_read_frame(&enc);
         }
     }
 }
