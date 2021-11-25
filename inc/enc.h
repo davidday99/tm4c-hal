@@ -8,7 +8,7 @@ typedef struct ENC {
 } ENC;
 
 void enc_init(ENC *enc);
-void enc_write_frame(struct enet_frame *e);
-void enc_read_frame(struct enet_frame *e);
+void enc_write_frame(ENC *enc, struct enet_frame *e);
+void enc_read_frame(ENC *enc, struct enet_frame *e);
 
 #endif /* _ENC_H_ */

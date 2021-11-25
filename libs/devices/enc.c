@@ -8,10 +8,11 @@ void enc_init(ENC *enc) {
     ENC28J60_init(enc->model);
 }
 
-void enc_write_frame(struct enet_frame *e) {
-    return;
+void enc_write_frame(ENC *enc, struct enet_frame *e) {
+    uint8_t *data = e;
+    ENC28J60_write_frame(enc->model, data, 0);
 }
 
-void enc_read_frame(struct enet_frame *e) {
+void enc_read_frame(ENC *enc, struct enet_frame *e) {
     return;
 }
