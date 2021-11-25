@@ -9,7 +9,7 @@ void enc_init(ENC *enc) {
 }
 
 void enc_write_frame(ENC *enc, struct enet_frame *e) {
-    uint8_t *data = e;
+    uint8_t *data = (uint8_t*) e;
     ENC28J60_write_frame(enc->model, data, 0);
 }
 

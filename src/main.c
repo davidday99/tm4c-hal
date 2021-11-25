@@ -117,9 +117,7 @@ int main(void){
             Delay1s();
             lcd_write(&lcd, ".");
             Delay1s();
-            lcd_write(&lcd, "%b", 8);
-            lcd_write(&lcd, "%b", 8);
-            lcd_write(&lcd, "%b", 8);
+            lcd_backspace(&lcd, 3);
         } else {
             hex_to_str(read, buf);
             prev = read;

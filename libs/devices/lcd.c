@@ -4,6 +4,8 @@
 #include "lcd.h"
 #include "st7735.h"
 
+#define BACKSPACE 8
+
 static void format_str(char format, uint32_t val, char *output_buf);
 static void lcd_write_char(LCD *lcd, char c);
 static void lcd_write_string(LCD *lcd, char *s);
@@ -32,6 +34,11 @@ void lcd_write(LCD *lcd, char *s, ...) {
     }
 }
 
+void lcd_backspace(LCD *lcd, uint32_t count) {
+    while (count--)
+        lcd_write_char(lcd, BACKSPACE);
+}
+
 static void lcd_write_char(LCD *lcd, char c) {
     ST7735_OutChar(lcd->model, c); 
 }
@@ -53,11 +60,6 @@ static void format_str(char format, uint32_t val, char *output_buf) {
         case 'x':
         case 'X':
             int_to_hex_str(val, output_buf);
-            break;
-        case 'b':
-        case 'B':
-            output_buf[0] = 8;
-            output_buf[1] = '\0';
             break;
         default:
             output_buf[0] = '\0';
