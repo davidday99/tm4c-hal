@@ -946,6 +946,7 @@ void ST7735_OutChar(struct ST7735 *st7735, char ch){
     if((ch == 10) || (ch == 13) || (ch == 27)) {
         st7735->y_pos++; st7735->x_pos=0;
         if(st7735->y_pos > 15) {
+            ST7735_FillScreen(st7735, ST7735_BLACK);
             st7735->y_pos = 0;
         }
         ST7735_DrawString(st7735, 0, st7735->y_pos,"                     ",st7735->text_color);
