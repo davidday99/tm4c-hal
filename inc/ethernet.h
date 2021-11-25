@@ -16,11 +16,17 @@ struct enet_frame {
     uint8_t dest[6];
     uint8_t src[6];
     uint16_t type;
-    uint8_t data[1500];
+    uint8_t *data;
     uint8_t fcs[4];
-} __attribute__((packed));
+    uint16_t dlen;
+};
 
-uint8_t write_rx_frame(uint8_t *data, uint16_t len);
-uint8_t read_rx_frame(struct enet_frame *frame);
+uint8_t write_rx_frame(uint8_t *dest,
+                        uint8_t *src,
+                        uint16_t type,
+                        uint8_t *data,
+                        uint16_t dlen,
+                        uint8_t *fcs);
+uint8_t read_rx_frame(struct enet_frame *e);
 
 #endif /* _ETHERNET_H_ */

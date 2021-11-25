@@ -31,8 +31,8 @@ uint8_t transmit[16] = {
     0x0C,
     0xC0,
     0x0C,
-    0xBE,
-    0xEF,
+    0x00,
+    0x08,
     0xFF,
     0xFF
 };
@@ -123,8 +123,7 @@ int main(void){
             ST7735_OutString(&ST7735, "Frame ");
             ST7735_OutString(&ST7735, buf);        
             ST7735_OutString(&ST7735, " received!\n");
-            len = ENC28J60_read_frame(&ENC28J60, frame);
-            write_rx_frame(frame, len - 18);
+            len = ENC28J60_read_frame(&ENC28J60);
         }
     }
 }

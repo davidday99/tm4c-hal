@@ -543,7 +543,6 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     uint8_t tsv[8];
     uint16_t start_addr;
     uint16_t rx_start_addr;
-    uint8_t written[25];
     
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
@@ -570,12 +569,6 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     bit_field_set(enc28j60, ECON1, 0x08);
 
     ENC28J60_get_tx_status_vec(enc28j60, tsv);
-
-    write_control_register(enc28j60, ERDPTL, 0);
-    write_control_register(enc28j60, ERDPTH, 0);
-
-    read_buffer_memory(enc28j60, written, 24);
-
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
