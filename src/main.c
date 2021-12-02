@@ -6,6 +6,7 @@
 #include "enc28j60.h"
 #include "enc.h"
 #include "ethernet.h"
+#include "ip.h"
 #include "lcd.h"
 
 extern void EnableInterrupts();
@@ -39,42 +40,11 @@ uint8_t transmit[16] = {
     0xFF
 };
 
-
-
-char HEX_CONV[] = "abcdef";
-
-void print_line(char *s) {
-    if (ST7735.y_pos == 15) {
-        ST7735_OutString(&ST7735, s);
-        ST7735_FillScreen(&ST7735, ST7735_BLACK);
-    }
-    ST7735_OutString(&ST7735, s);
-}
-
-void hex_to_str(uint32_t val, char *buf) {
-    uint32_t i = 0;
-    char copy[20];
-    if (val == 0) {
-        copy[i++] = '0';
-    } else {
-        while (val > 0) {
-            uint8_t tmp = (val & 0xF);
-            if (tmp > 9) {
-                tmp = HEX_CONV[tmp - 10];
-            } else {
-                tmp += '0';
-            }
-            copy[i++] = tmp;
-            val >>= 4;
-        }
-    }
-    uint32_t j = 2;
-    buf[0] = '0';
-    buf[1] = 'x';
-    while (i > 0) {
-        buf[j++] = copy[--i];
-    }
-    buf[j] = '\0';
+uint32_t strlen(const char *s) {
+    uint32_t len = 0;
+    while (*s++)
+        len++;
+    return len;
 }
 
 int main(void){
@@ -84,8 +54,8 @@ int main(void){
 
     PLL_init();
 
-    char buf[20];
-    uint8_t frame[1518];
+    struct enet_frame e_frame;
+    struct ip_pkt ip;
     uint32_t len;
 
 
@@ -100,7 +70,6 @@ int main(void){
         lcd_write(&lcd, "Enabling receive.\n");
         ENC28J60_enable_receive(&ENC28J60) ? lcd_write(&lcd, "Receive enabled.\n") : 
                                     lcd_write(&lcd, "Could not enable.\n");
-        ENC28J60_enable_loopback_mode(&ENC28J60);   
     } else {
         lcd_write(&lcd, "Could not init.\n");
     }
@@ -108,23 +77,28 @@ int main(void){
     lcd_write(&lcd, "Waiting for frames.\n");
     
     uint8_t prev = 0;
+    read = 0;
     while (1) {
-        ENC28J60_write_frame(&ENC28J60, transmit, 16);
-        read += 1;
-        // read = get_packet_count(&ENC28J60);
-        if (prev == read) {
-            lcd_write(&lcd, ".");
-            Delay1s();
-            lcd_write(&lcd, ".");
-            Delay1s();
-            lcd_write(&lcd, ".");
-            Delay1s();
-            lcd_backspace(&lcd, 3);
-        } else {
-            hex_to_str(read, buf);
+        // ENC28J60_write_frame(&ENC28J60, transmit, 16);
+        // read += 1;
+        read = get_packet_count(&ENC28J60);
+        if (prev != read) {
             prev = read;
-            lcd_write(&lcd, "Frame %d received!\n", read);
-            enc_read_frame(&enc);
+            enc_read_frame(&enc, &e_frame);
+            
+            lcd_write(&lcd, "des:");
+            for (uint8_t i = 0; i < ENET_DEST_LEN; i++)
+                lcd_write(&lcd, "%x%c", e_frame.dest[i], i < ENET_DEST_LEN - 1 ? '-' : ' ');
+            lcd_write(&lcd, "\n");
+
+            lcd_write(&lcd, "src:");
+            for (uint8_t i = 0; i < ENET_SRC_LEN; i++)
+                lcd_write(&lcd, "%x%c", e_frame.src[i], i < ENET_SRC_LEN - 1 ? '-' : ' ');
+            lcd_write(&lcd, "\n");
+
+            lcd_write(&lcd, "type:0x%X\n", e_frame.type);
+
+            lcd_write(&lcd, "frame size:%d\n", e_frame.dlen);            
         }
     }
 }

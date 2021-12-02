@@ -487,7 +487,7 @@ uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     return init_success(enc28j60);
 }
 
-uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, struct enet_frame *e) {
+uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     uint16_t len;
     uint8_t next_frame[3];
     uint8_t rsv[5];
@@ -495,7 +495,6 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, struct enet_frame *e) {
     uint8_t dest_mac[6];
     uint8_t src_mac[6];
     uint16_t type;
-    uint8_t data[1500];
     uint8_t fcs[4];
 
 
@@ -512,25 +511,8 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, struct enet_frame *e) {
     write_control_register(enc28j60, ERXRDPTL, next_frame[1]);
     write_control_register(enc28j60, ERXRDPTH, next_frame[2]);
 
-    uint16_t i = 1;
-
-    for (uint8_t j = 0; j < 6; i++, j++)
-        e->dest[j] = frame[i];
-
-    for (uint8_t j; j < 6; i++, j++)
-        e->src[j] = frame[i];
-
-    e->type = frame[i + 1] | (frame[i + 2] << 8);
-
-    i += 2;
-
-    for (uint16_t j = 0; j < len; i++, j++)
-        e->data[j] = frame[i];
-
-    e->dlen = len;
-
-    for (uint8_t j = 0; j < 4; i++, j++)
-        e->fcs[j] = frame[i];
+    for (uint16_t i = 0, j = 1; j < len; i++, j++)
+        data[i] = frame[j];
     
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
