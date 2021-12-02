@@ -53,6 +53,10 @@ static void format_str(char format, uint32_t val, char *output_buf) {
             output_buf[0] = '%';
             output_buf[1] = '\0';
             break;
+        case 'c':
+            output_buf[0] = (char) val;
+            output_buf[1] = '\0';
+            break;
         case 'd':
         case 'D':
             int_to_dec_str(val, output_buf);
@@ -102,9 +106,7 @@ static void int_to_hex_str(uint32_t val, char *buf) {
             val >>= 4;
         }
     }
-    uint32_t j = 2;
-    buf[0] = '0';
-    buf[1] = 'x';
+    uint32_t j = 0;
     while (i > 0) {
         buf[j++] = copy[--i];
     }
