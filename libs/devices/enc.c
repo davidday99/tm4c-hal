@@ -16,5 +16,5 @@ void enc_write_frame(ENC *enc, struct enet_frame *e) {
 void enc_read_frame(ENC *enc) {
     struct enet_frame e;
     ENC28J60_read_frame(enc->model, &e);
-    write_rx_frame(e.dest, e.src, e.type, e.data, e.dlen, e.fcs);
+    //write_rx_frame(e.dest, e.src, e.type, e.data, e.dlen, e.fcs);
 }
