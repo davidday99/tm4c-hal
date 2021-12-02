@@ -948,9 +948,8 @@ void ST7735_OutChar(struct ST7735 *st7735, char ch){
     ST7735_DrawCharS(st7735, st7735->x_pos * 6, st7735->y_pos * 10, ch, st7735->text_color, ST7735_BLACK, 1);
     st7735->x_pos++;
     if(st7735->x_pos > 20) {
-        st7735->x_pos = 20;
-        ST7735_DrawCharS(st7735, st7735->x_pos * 6, st7735->y_pos * 10, '*', ST7735_RED,ST7735_BLACK, 1);
-    }
+        st7735->x_pos = 0;
+        st7735->y_pos++;    }
     return;
 }
 
