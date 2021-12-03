@@ -513,6 +513,8 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
 
     for (uint16_t i = 0, j = 1; j < len; i++, j++)
         data[i] = frame[j];
+
+    bit_field_set(enc28j60, ECON2, 0x40);  // decrement packet count
     
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
