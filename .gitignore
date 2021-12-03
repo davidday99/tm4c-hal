@@ -5,3 +5,9 @@
 
 # VSCode
 .vscode/
+
+# Networking lib
+libs/networking/
+inc/ethernet.h
+inc/ip.h
+inc/arp.h
