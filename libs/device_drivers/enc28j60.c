@@ -441,6 +441,37 @@ uint8_t get_packet_count(struct ENC28J60 *enc28j60) {
     return count;
 }
 
+uint32_t ENC28J60_get_mac_address_low(struct ENC28J60 *enc28j60) {
+    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 3
+    bit_field_set(enc28j60, ECON1, 3);
+
+    uint32_t macaddr = 0;
+    macaddr |= read_control_register(enc28j60, MAADR5, 0) << 8;
+    macaddr |= read_control_register(enc28j60, MAADR6, 0);
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+    return macaddr;
+}
+
+
+uint32_t ENC28J60_get_mac_address_high(struct ENC28J60 *enc28j60) {
+    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 3
+    bit_field_set(enc28j60, ECON1, 3);
+
+    uint32_t macaddr = 0;
+    macaddr |= read_control_register(enc28j60, MAADR1, 0) << 24;
+    macaddr |= read_control_register(enc28j60, MAADR2, 0) << 16;
+    macaddr |= read_control_register(enc28j60, MAADR3, 0) << 8;
+    macaddr |= read_control_register(enc28j60, MAADR4, 0);
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+    return macaddr;
+}
+
 void ENC28J60_enable_loopback_mode(struct ENC28J60 *enc28j60) {
     uint16_t current;
 
