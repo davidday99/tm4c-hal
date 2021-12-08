@@ -11,6 +11,6 @@ typedef struct ENC {
 uint8_t enc_init(ENC *enc);
 void enc_write_frame(ENC *enc, struct enet_frame *e);
 void enc_read_frame(ENC *enc, struct enet_frame *e);
-void enc_get_mac_address_low(ENC *enc);
-void enc_get_mac_address_high(ENC *enc);
+uint32_t enc_get_mac_address_low(ENC *enc);
+uint32_t enc_get_mac_address_high(ENC *enc);
 #endif /* _ENC_H_ */

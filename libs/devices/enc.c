@@ -19,10 +19,10 @@ void enc_read_frame(ENC *enc, struct enet_frame *e) {
     init_frame(e, data, len);
 }
 
-void enc_get_mac_address_low(ENC *enc) {
+uint32_t enc_get_mac_address_low(ENC *enc) {
     return ENC28J60_get_mac_address_low(enc->model);
 }
 
-void enc_get_mac_address_high(ENC *enc) {
+uint32_t enc_get_mac_address_high(ENC *enc) {
     return ENC28J60_get_mac_address_high(enc->model);
 }
