@@ -35,3 +35,11 @@ void set_RCGCSSI(enum SSI_MODULE module, uint8_t value) {
                             (value << module);
     delay();
 }
+
+void set_NVIC_EN0_bit(uint32_t bit) {
+    NVIC_EN0_R |= (1 << bit);
+}
+
+void clear_NVIC_EN0_bit(uint32_t bit) {
+    NVIC_EN0_R &= ~(1 << bit);
+}
