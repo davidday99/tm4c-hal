@@ -161,12 +161,12 @@ void unmask_gpio_interrupt(struct GPIO_PIN *gpio_pin) {
     set_gpio_pin_IM(gpio_pin->port, gpio_pin->pin, 1);
 }
 
-uint8_t get_gpio_interrupt_mask(struct GPIO_PIN *gpio_pin) {
-    return get_gpio_pin_MIS(gpio_pin->port, gpio_pin->pin);
+uint8_t get_gpio_interrupt_mask(enum PORT port) {
+    return get_gpio_port_MIS(port);
 }
 
-uint8_t get_gpio_raw_interrupt_mask(struct GPIO_PIN *gpio_pin) {
-    return get_gpio_pin_RIS(gpio_pin->port, gpio_pin->pin);
+uint8_t get_gpio_raw_interrupt_mask(enum PORT port) {
+    return get_gpio_port_RIS(port);
 }
 
 void clear_gpio_interrupt(struct GPIO_PIN *gpio_pin) {
@@ -178,6 +178,7 @@ void init_gpio_both_edges_interrupt(struct GPIO_PIN *gpio_pin) {
 }
 
 void enable_gpio_falling_edge_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_NVIC_EN0_bit(gpio_pin->port);
     mask_gpio_interrupt(gpio_pin);
     enable_gpio_edge_interrupt(gpio_pin);
     init_gpio_falling_edge_or_level_low_interrupt(gpio_pin);

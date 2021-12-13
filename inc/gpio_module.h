@@ -1,6 +1,8 @@
 #ifndef _GPIO_MODULE_H_
 #define _GPIO_MODULE_H_
 
+#include "common.h"
+
 extern struct GPIO_PIN PORTA_PIN0;
 extern struct GPIO_PIN PORTA_PIN1;
 extern struct GPIO_PIN PORTA_PIN2;
@@ -80,8 +82,8 @@ void enable_gpio_edge_interrupt(struct GPIO_PIN *gpio_pin);
 void enable_gpio_level_interrupt(struct GPIO_PIN *gpio_pin);
 void mask_gpio_interrupt(struct GPIO_PIN *gpio_pin);
 void unmask_gpio_interrupt(struct GPIO_PIN *gpio_pin);
-uint8_t get_gpio_interrupt_mask(struct GPIO_PIN *gpio_pin);
-uint8_t get_gpio_raw_interrupt_mask(struct GPIO_PIN *gpio_pin);
+uint8_t get_gpio_interrupt_mask(enum PORT port);
+uint8_t get_gpio_raw_interrupt_mask(enum PORT port);
 void clear_gpio_interrupt(struct GPIO_PIN *gpio_pin);
 void init_gpio_both_edges_interrupt(struct GPIO_PIN *gpio_pin);
 void enable_gpio_falling_edge_interrupt(struct GPIO_PIN *gpio_pin);

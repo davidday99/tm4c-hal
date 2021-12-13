@@ -139,12 +139,12 @@ void set_gpio_pin_IS(enum PORT port, enum PIN pin, uint8_t value) {
                             (value << pin);
 }
 
-uint8_t get_gpio_pin_RIS(enum PORT port, enum PIN pin) {
-    return (*(PORTS[port].RIS) & (1 << pin)) >> pin;
+uint8_t get_gpio_port_RIS(enum PORT port) {
+    return *(PORTS[port].RIS);
 }
 
-uint8_t get_gpio_pin_MIS(enum PORT port, enum PIN pin) {
-    return (*(PORTS[port].MIS) & (1 << pin)) >> pin;
+uint8_t get_gpio_port_MIS(enum PORT port) {
+    return *(PORTS[port].MIS);
 }
 
 void set_gpio_pin_ICR(enum PORT port, enum PIN pin) {
