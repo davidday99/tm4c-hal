@@ -241,7 +241,11 @@ static void system_reset(struct ENC28J60 *enc28j60) {
     uint8_t cmd = SRC_OPCODE | SRC_ARG0;
     set_gpio_pin_low(enc28j60->cs);
     write_ssi(enc28j60->ssi, &cmd, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
     set_gpio_pin_high(enc28j60->cs);
+    while (!ssi_rx_empty(enc28j60->ssi)) 
+        read_ssi(enc28j60->ssi, &cmd, 1);
 }
 
 static void ENC28J60_init_peripherals(struct ENC28J60 *enc28j60) {
@@ -298,6 +302,10 @@ static void init_receive_filters(struct ENC28J60 *enc28j60) {
     write_control_register(enc28j60, ERXFCON, 0);  // enable promiscuous mode (receive all packets)
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
+}
+
+static void init_interrupts(struct ENC28J60 *enc28j60) {
+    bit_field_set(enc28j60, EIE, 0xC0);
 }
 
 static void init_mac_registers(struct ENC28J60 *enc28j60) {
@@ -419,6 +427,8 @@ static uint8_t init_success(struct ENC28J60 *enc28j60) {
 
     success &= read_phy_register(enc28j60, PHCON1) == 0x0100;
 
+    success &= read_control_register(enc28j60, EIE, 1) == 0xC0;
+
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
 
@@ -512,14 +522,18 @@ void ENC28J60_get_tx_status_vec(struct ENC28J60 *enc28j60, uint8_t *tsv) {
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     ENC28J60_init_peripherals(enc28j60);
+    system_reset(enc28j60);
     init_buffers(enc28j60);
     init_receive_filters(enc28j60);
+    init_interrupts(enc28j60);
 
     while ((read_control_register(enc28j60, ESTAT, 1) & 1) == 0)  // wait for OST
         ;
 
     init_mac_registers(enc28j60);
     init_phy_registers(enc28j60);
+
+    bit_field_clear(enc28j60, ECON1, 0xC0);
 
     return init_success(enc28j60);
 }
@@ -545,8 +559,8 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     len = (rsv[1] & 0xFF) | (rsv[2] << 8);
 
     read_buffer_memory(enc28j60, frame, len);
-    write_control_register(enc28j60, ERXRDPTL, next_frame[1]);
-    write_control_register(enc28j60, ERXRDPTH, next_frame[2]);
+    // write_control_register(enc28j60, ERXRDPTL, next_frame[1]);
+    // write_control_register(enc28j60, ERXRDPTH, next_frame[2]);
 
     for (uint16_t i = 0, j = 1; j < len; i++, j++)
         data[i] = frame[j];
