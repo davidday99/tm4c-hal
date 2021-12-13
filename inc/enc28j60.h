@@ -8,6 +8,7 @@
 struct ENC28J60 {
     struct SSI *ssi;
     struct GPIO_PIN *cs;
+    struct GPIO_PIN *intr;
 };
 
 extern struct ENC28J60 ENC28J60;

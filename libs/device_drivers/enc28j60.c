@@ -118,7 +118,8 @@
 
 struct ENC28J60 ENC28J60 = {
     &SSI_1,
-    &PORTB_PIN0
+    &PORTB_PIN0,
+    &PORTB_PIN1
 };
 
 void delay_50ns(uint32_t n) {
@@ -254,6 +255,11 @@ static void ENC28J60_init_peripherals(struct ENC28J60 *enc28j60) {
     init_gpio_pin_as_output(enc28j60->cs);
     init_gpio_pin_as_digital(enc28j60->cs);
     set_gpio_pin_high(enc28j60->cs);
+
+    disable_gpio_pin_alternate_function(enc28j60->intr);
+    init_gpio_pin_as_input(enc28j60->intr);
+    init_gpio_pin_as_digital(enc28j60->intr);
+    enable_gpio_falling_edge_interrupt(enc28j60->intr);
 }
 
 static void init_buffers(struct ENC28J60 *enc28j60) {
