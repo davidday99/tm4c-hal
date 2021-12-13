@@ -133,3 +133,36 @@ void set_gpio_pin_DATA(enum PORT port, enum PIN pin, uint8_t value) {
     *(PORTS[port].DATA) = (*(PORTS[port].DATA) & ~(1 << pin)) |
                             (value << pin);
 }
+
+void set_gpio_pin_IS(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].IS) = (*(PORTS[port].IS) & ~(1 << pin)) |
+                            (value << pin);
+}
+
+uint8_t get_gpio_pin_RIS(enum PORT port, enum PIN pin) {
+    return (*(PORTS[port].RIS) & (1 << pin)) >> pin;
+}
+
+uint8_t get_gpio_pin_MIS(enum PORT port, enum PIN pin) {
+    return (*(PORTS[port].MIS) & (1 << pin)) >> pin;
+}
+
+void set_gpio_pin_ICR(enum PORT port, enum PIN pin) {
+    *(PORTS[port].ICR) = (*(PORTS[port].ICR) & ~(1 << pin)) |
+                            (1 << pin);
+}
+
+void set_gpio_pin_IEV(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].IEV) = (*(PORTS[port].IEV) & ~(1 << pin)) |
+                            (value << pin);
+}
+
+void set_gpio_pin_IBE(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].IBE) = (*(PORTS[port].IBE) & ~(1 << pin)) |
+                            (value << pin);
+}
+
+void set_gpio_pin_IM(enum PORT port, enum PIN pin, uint8_t value) {
+    *(PORTS[port].IM) = (*(PORTS[port].IM) & ~(1 << pin)) |
+                            (value << pin);
+}

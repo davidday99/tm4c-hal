@@ -76,5 +76,18 @@ void unlock_and_commit_gpio_pin(struct GPIO_PIN *gpio_pin);
 void uncommit_and_lock_gpio_pin(struct GPIO_PIN *gpio_pin);
 void set_gpio_pin_high(struct GPIO_PIN *gpio_pin);
 void set_gpio_pin_low(struct GPIO_PIN *gpio_pin);
+void enable_gpio_edge_interrupt(struct GPIO_PIN *gpio_pin);
+void enable_gpio_level_interrupt(struct GPIO_PIN *gpio_pin);
+void mask_gpio_interrupt(struct GPIO_PIN *gpio_pin);
+void unmask_gpio_interrupt(struct GPIO_PIN *gpio_pin);
+uint8_t get_gpio_interrupt_mask(struct GPIO_PIN *gpio_pin);
+uint8_t get_gpio_raw_interrupt_mask(struct GPIO_PIN *gpio_pin);
+void clear_gpio_interrupt(struct GPIO_PIN *gpio_pin);
+void init_gpio_both_edges_interrupt(struct GPIO_PIN *gpio_pin);
+void enable_gpio_falling_edge_interrupt(struct GPIO_PIN *gpio_pin);
+void enable_gpio_rising_edge_interrupt(struct GPIO_PIN *gpio_pin);
+void enable_gpio_both_edges_interrupt(struct GPIO_PIN *gpio_pin);
+void enable_gpio_level_low_interrupt(struct GPIO_PIN *gpio_pin);
+void enable_gpio_level_high_interrupt(struct GPIO_PIN *gpio_pin);
 
 #endif /* _GPIO_MODULE_H_ */

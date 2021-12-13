@@ -60,6 +60,9 @@ struct GPIO_PIN PORTF_PIN7 = {PORTF, PIN7};
 
 static const uint32_t GPIO_LOCK = 0x4C4F434B;
 
+static void init_gpio_falling_edge_or_level_low_interrupt(struct GPIO_PIN *gpio_pin);
+static void init_gpio_rising_edge_or_level_high_interrupt(struct GPIO_PIN *gpio_pin);
+
 void init_gpio_port_clock(struct GPIO_PIN *gpio_pin) {
     set_RCGCGPIO(gpio_pin->port, 1);
 }
@@ -141,4 +144,87 @@ void set_gpio_pin_high(struct GPIO_PIN *gpio_pin) {
 void set_gpio_pin_low(struct GPIO_PIN *gpio_pin) {
     set_gpio_pin_DATA(gpio_pin->port, gpio_pin->pin, 0);
 }
+
+void enable_gpio_edge_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_IS(gpio_pin->port, gpio_pin->pin, 0);
+}
+
+void enable_gpio_level_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_IS(gpio_pin->port, gpio_pin->pin, 1);
+}
+
+void mask_gpio_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_IM(gpio_pin->port, gpio_pin->pin, 0);
+}
+
+void unmask_gpio_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_IM(gpio_pin->port, gpio_pin->pin, 1);
+}
+
+uint8_t get_gpio_interrupt_mask(struct GPIO_PIN *gpio_pin) {
+    return get_gpio_pin_MIS(gpio_pin->port, gpio_pin->pin);
+}
+
+uint8_t get_gpio_raw_interrupt_mask(struct GPIO_PIN *gpio_pin) {
+    return get_gpio_pin_RIS(gpio_pin->port, gpio_pin->pin);
+}
+
+void clear_gpio_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_ICR(gpio_pin->port, gpio_pin->pin);
+}
+
+void init_gpio_both_edges_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_IBE(gpio_pin->port, gpio_pin->pin, 1);
+}
+
+void enable_gpio_falling_edge_interrupt(struct GPIO_PIN *gpio_pin) {
+    mask_gpio_interrupt(gpio_pin);
+    enable_gpio_edge_interrupt(gpio_pin);
+    init_gpio_falling_edge_or_level_low_interrupt(gpio_pin);
+    clear_gpio_interrupt(gpio_pin);
+    unmask_gpio_interrupt(gpio_pin);
+}
+
+void enable_gpio_rising_edge_interrupt(struct GPIO_PIN *gpio_pin) {
+    mask_gpio_interrupt(gpio_pin);
+    enable_gpio_edge_interrupt(gpio_pin);
+    init_gpio_rising_edge_or_level_high_interrupt(gpio_pin);
+    clear_gpio_interrupt(gpio_pin);
+    unmask_gpio_interrupt(gpio_pin);
+}
+
+void enable_gpio_both_edges_interrupt(struct GPIO_PIN *gpio_pin) {
+    mask_gpio_interrupt(gpio_pin);
+    enable_gpio_edge_interrupt(gpio_pin);
+    init_gpio_both_edges_interrupt(gpio_pin);
+    clear_gpio_interrupt(gpio_pin);
+    unmask_gpio_interrupt(gpio_pin);
+}
+
+void enable_gpio_level_low_interrupt(struct GPIO_PIN *gpio_pin) {
+    mask_gpio_interrupt(gpio_pin);
+    enable_gpio_level_interrupt(gpio_pin);
+    init_gpio_falling_edge_or_level_low_interrupt(gpio_pin);
+    clear_gpio_interrupt(gpio_pin);
+    unmask_gpio_interrupt(gpio_pin);
+}
+
+void enable_gpio_level_high_interrupt(struct GPIO_PIN *gpio_pin) {
+    mask_gpio_interrupt(gpio_pin);
+    enable_gpio_level_interrupt(gpio_pin);
+    init_gpio_rising_edge_or_level_high_interrupt(gpio_pin);
+    clear_gpio_interrupt(gpio_pin);
+    unmask_gpio_interrupt(gpio_pin);
+}
+
+static void init_gpio_falling_edge_or_level_low_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_IBE(gpio_pin->port, gpio_pin->pin, 0);
+    set_gpio_pin_IEV(gpio_pin->port, gpio_pin->pin, 0);
+}
+
+static void init_gpio_rising_edge_or_level_high_interrupt(struct GPIO_PIN *gpio_pin) {
+    set_gpio_pin_IBE(gpio_pin->port, gpio_pin->pin, 0);
+    set_gpio_pin_IEV(gpio_pin->port, gpio_pin->pin, 1);
+}
+
 
