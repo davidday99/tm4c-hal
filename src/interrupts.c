@@ -2,6 +2,7 @@
 #include "event_queue.h"
 #include "gpio.h"
 #include "common.h"
+#include "enc.h"
 
 void BusFault_Handler(void) {
     while (1)
@@ -14,6 +15,7 @@ void GPIOPortB_ISR(void) {
     uint8_t pin = get_gpio_port_MIS(PORTB);
     set_gpio_pin_ICR(PORTB, 1);
     set_gpio_pin_IM(PORTB, 1, 0);
+    enc_clear_interrupt_flag();
     if (pin == 2)
         event_queue_push(EVENT_ETHERNET_RECEIVE);
 
