@@ -271,25 +271,25 @@ static void init_buffers(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
     bit_field_set(enc28j60, ECON1, 0);
 
-    write_control_register(enc28j60, ERXSTL, 0xFA);  // Rx buffer start
-    write_control_register(enc28j60, ERXSTH, 0x05);
+    write_control_register(enc28j60, ERXSTL, 0);  // Rx buffer start
+    write_control_register(enc28j60, ERXSTH, 0);
     write_control_register(enc28j60, ERXNDL, 0xFF);  // Rx buffer end
-    write_control_register(enc28j60, ERXNDH, 0x1F);
+    write_control_register(enc28j60, ERXNDH, 0x17);
 
-    write_control_register(enc28j60, ERDPTL, 0xFA);  // Rx read pointer
-    write_control_register(enc28j60, ERDPTH, 0x05);
+    write_control_register(enc28j60, ERDPTL, 0);  // Rx read pointer
+    write_control_register(enc28j60, ERDPTH, 0);
 
     // set rx read ptr to start; data cannot be written past this, and it must be incremented manually
     write_control_register(enc28j60, ERXRDPTL, 0xFF);  
-    write_control_register(enc28j60, ERXRDPTH, 0x1F);
+    write_control_register(enc28j60, ERXRDPTH, 0x17);
 
-    // tx buffer is below rx buffer
+    // tx buffer is above rx buffer
     write_control_register(enc28j60, ETXSTL, 0);
-    write_control_register(enc28j60, ETXSTH, 0);
-    write_control_register(enc28j60, ETXNDL, 0);
-    write_control_register(enc28j60, ETXNDH, 0);
+    write_control_register(enc28j60, ETXSTH, 0x19);
+    write_control_register(enc28j60, ETXNDL, 0xF8);
+    write_control_register(enc28j60, ETXNDH, 0x1F);  // leave 7 bytes for status vector at end of buffer
     write_control_register(enc28j60, EWRPTL, 0);
-    write_control_register(enc28j60, EWRPTH, 0);
+    write_control_register(enc28j60, EWRPTH, 0x19);
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
@@ -389,20 +389,20 @@ static uint8_t init_success(struct ENC28J60 *enc28j60) {
     bit_field_set(enc28j60, ECON1, 0);
 
     uint8_t success = ((uint16_t) (read_control_register(enc28j60, ERXSTL, 1) | 
-                        (read_control_register(enc28j60, ERXSTH, 1) << 8))) == 0x05FA;
+                        (read_control_register(enc28j60, ERXSTH, 1) << 8))) == 0;
     success &= ((uint16_t) (read_control_register(enc28j60, ERXNDL, 1) |
-                        (read_control_register(enc28j60, ERXNDH, 1) << 8))) == 0x1FFF;
+                        (read_control_register(enc28j60, ERXNDH, 1) << 8))) == 0x17FF;
     success &= ((uint16_t) read_control_register(enc28j60, ERXRDPTL, 1) |
-                        (read_control_register(enc28j60, ERXRDPTH, 1) << 8)) == 0x1FFF;
+                        (read_control_register(enc28j60, ERXRDPTH, 1) << 8)) == 0x17FF;
     success &= ((uint16_t) read_control_register(enc28j60, ERDPTL, 1) |
-                        (read_control_register(enc28j60, ERDPTH, 1) << 8)) == 0x05FA;
+                        (read_control_register(enc28j60, ERDPTH, 1) << 8)) == 0;
 
     success &= ((uint16_t) read_control_register(enc28j60, ETXSTL, 1) |
-                        (read_control_register(enc28j60, ETXSTH, 1) << 8)) == 0;
+                        (read_control_register(enc28j60, ETXSTH, 1) << 8)) == 0x1900;
     success &= ((uint16_t) read_control_register(enc28j60, ETXNDL, 1) |
-                        (read_control_register(enc28j60, ETXNDH, 1) << 8)) == 0;
+                        (read_control_register(enc28j60, ETXNDH, 1) << 8)) == 0x1FF8;
     success &= ((uint16_t) read_control_register(enc28j60, EWRPTL, 1) |
-                        (read_control_register(enc28j60, EWRPTH, 1) << 8)) == 0;
+                        (read_control_register(enc28j60, EWRPTH, 1) << 8)) == 0x1900;
 
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
     bit_field_set(enc28j60, ECON1, 2);                    
@@ -457,35 +457,20 @@ uint8_t get_packet_count(struct ENC28J60 *enc28j60) {
     return count;
 }
 
-uint32_t ENC28J60_get_mac_address_low(struct ENC28J60 *enc28j60) {
+void ENC28J60_get_mac_address(struct ENC28J60 *enc28j60, uint8_t *buf) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 3
     bit_field_set(enc28j60, ECON1, 3);
 
-    uint32_t macaddr = 0;
-    macaddr |= read_control_register(enc28j60, MAADR5, 0) << 8;
-    macaddr |= read_control_register(enc28j60, MAADR6, 0);
+    buf[0] = read_control_register(enc28j60, MAADR1, 0);
+    buf[1] = read_control_register(enc28j60, MAADR2, 0);
+    buf[2] = read_control_register(enc28j60, MAADR3, 0);
+    buf[3] = read_control_register(enc28j60, MAADR4, 0);
+    buf[4] = read_control_register(enc28j60, MAADR5, 0);
+    buf[5]= read_control_register(enc28j60, MAADR6, 0);
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
-    return macaddr;
-}
-
-
-uint32_t ENC28J60_get_mac_address_high(struct ENC28J60 *enc28j60) {
-    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
-    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 3
-    bit_field_set(enc28j60, ECON1, 3);
-
-    uint32_t macaddr = 0;
-    macaddr |= read_control_register(enc28j60, MAADR1, 0) << 24;
-    macaddr |= read_control_register(enc28j60, MAADR2, 0) << 16;
-    macaddr |= read_control_register(enc28j60, MAADR3, 0) << 8;
-    macaddr |= read_control_register(enc28j60, MAADR4, 0);
-
-    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
-    bit_field_set(enc28j60, ECON1, bank);
-    return macaddr;
 }
 
 void ENC28J60_enable_loopback_mode(struct ENC28J60 *enc28j60) {
@@ -538,6 +523,10 @@ uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     return init_success(enc28j60);
 }
 
+void enc28j60_decrement_packet_count(struct ENC28J60 *enc28j60) {
+    bit_field_set(enc28j60, ECON2, 0x40);  // decrement packet count
+}
+
 uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     uint16_t len;
     uint8_t next_frame[3];
@@ -559,13 +548,15 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     len = (rsv[1] & 0xFF) | (rsv[2] << 8);
 
     read_buffer_memory(enc28j60, frame, len);
-    // write_control_register(enc28j60, ERXRDPTL, next_frame[1]);
-    // write_control_register(enc28j60, ERXRDPTH, next_frame[2]);
+
+
+    write_control_register(enc28j60, ERXRDPTL, next_frame[1]);
+    write_control_register(enc28j60, ERXRDPTH, next_frame[2]);
 
     for (uint16_t i = 0, j = 1; j < len; i++, j++)
         data[i] = frame[j];
 
-    bit_field_set(enc28j60, ECON2, 0x40);  // decrement packet count
+    // bit_field_set(enc28j60, ECON2, 0x40);  // decrement packet count
     
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
