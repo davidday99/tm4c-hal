@@ -8,6 +8,7 @@
 #include "netcommon.h"
 #include "ip_util.h"
 #include "stdlib.h"
+#include "ipv4.h"
 
 #define EVENT_QUEUE_LEN 100
 
@@ -24,6 +25,7 @@ void print_arp_packet(LCD *lcd, struct arphdr *hdr);
 
 static void handle_ethernet_receive(LCD *lcd, ENC *enc);
 static void handle_arp(LCD *lcd, ENC *enc);
+static void handle_ipv4(LCD *lcd, ENC *enc);
 
 uint8_t event_queue_push(event_t event) {
     if (event_queue_wrptr == event_queue_rdptr - 1)
@@ -71,9 +73,10 @@ void event_queue_handle_event(event_t eventid, ...) {
             break;
         case EVENT_IPV4_RECEIVE:
             lcd_write(lcd, "IPV4 RECEIVE EVENT\n");
+            handle_ipv4(lcd, enc);
             break;
         case EVENT_IPV6_RECEIVE:
-            lcd_write(lcd, "IPV4 RECEIVE EVENT\n");
+            lcd_write(lcd, "IPV6 RECEIVE EVENT\n");
             break;
         default:
             lcd_write(lcd, "UNKNOWN EVENT\n");
@@ -103,6 +106,30 @@ static void handle_arp(LCD *lcd, ENC *enc) {
     enc_write_frame(enc, arppkt, sizeof(arppkt));
     enc_acknowledge_frame();
     enc_frame_waiting = 0;
+}
+
+static void handle_ipv4(LCD *lcd, ENC *enc) {
+    struct ipv4hdr *iptr = (struct ipv4hdr *) (enc_rx_buffer + ENET_DATA_OFFSET);
+    char ipaddr[16];
+    lcd_write(lcd, "Version: %d\n", iptr->version);
+    lcd_write(lcd, "IHL: %d\n", iptr->ihl);
+    lcd_write(lcd, "TOS: %d\n", iptr->tos);
+    lcd_write(lcd, "Version: %d\n", hton16(iptr->len));
+    lcd_write(lcd, "ID: %d\n", hton16(iptr->id));
+    lcd_write(lcd, "Version: %d\n", iptr->version);
+    lcd_write(lcd, "Flags: %d\n", iptr->flags);
+    lcd_write(lcd, "Offset: %d\n", iptr->frgment_offset);
+    lcd_write(lcd, "TTL: %d\n", iptr->ttl);
+    lcd_write(lcd, "Protocol: %d\n", iptr->protocol);
+    lcd_write(lcd, "Checksum: %d\n", hton16(iptr->cksm));
+    int_to_ipv4(hton32(iptr->src), ipaddr);
+    lcd_write(lcd, "Sender IP:\n");
+    lcd_write(lcd, ipaddr);
+    lcd_write(lcd, "\n");
+    int_to_ipv4(hton32(iptr->dest), ipaddr);
+    lcd_write(lcd, "Dest. IP:\n");
+    lcd_write(lcd, ipaddr);
+    lcd_write(lcd, "\n");
 }
 
 void print_arp_packet(LCD *lcd, struct arphdr *hdr) {
