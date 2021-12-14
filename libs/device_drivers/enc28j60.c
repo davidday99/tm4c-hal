@@ -574,17 +574,17 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
     bit_field_set(enc28j60, ECON1, 0);
 
-    start_addr = read_control_register(enc28j60, ETXNDL, 1) |
-                    (read_control_register(enc28j60, ETXNDH, 1) << 8);
+    start_addr = read_control_register(enc28j60, ETXSTL, 1) |
+                    (read_control_register(enc28j60, ETXSTH, 1) << 8);
 
     rx_start_addr = read_control_register(enc28j60, ERXSTL, 1) |
                     (read_control_register(enc28j60, ERXSTH, 1) << 8);
 
 
-    start_addr = (start_addr + size + 7 < rx_start_addr && start_addr > 0) ? start_addr + 8 : 0; 
+    // start_addr = (start_addr + size + 7 < rx_start_addr && start_addr > 0) ? start_addr + 8 : 0; 
 
-    write_control_register(enc28j60, ETXSTL, start_addr & 0xFF);
-    write_control_register(enc28j60, ETXSTH, (start_addr & 0xFF00) >> 8);
+    // write_control_register(enc28j60, ETXSTL, start_addr & 0xFF);
+    // write_control_register(enc28j60, ETXSTH, (start_addr & 0xFF00) >> 8);
 
     write_control_register(enc28j60, ETXNDL, (start_addr + size) & 0xFF);
     write_control_register(enc28j60, ETXNDH, ((start_addr + size) & 0xFF00) >> 8);
@@ -592,7 +592,7 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     write_buffer_memory(enc28j60, &control, 1);
     write_buffer_memory(enc28j60, data, size);
 
-    bit_field_set(enc28j60, ECON1, 0x08);
+    bit_field_set(enc28j60, ECON1, 0x08);  // start transmission process
 
     ENC28J60_get_tx_status_vec(enc28j60, tsv);
 
