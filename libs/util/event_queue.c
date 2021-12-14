@@ -21,6 +21,8 @@ static uint8_t event_queue_rdptr;
 static uint8_t event_queue_wrptr;
 
 void print_arp_packet(LCD *lcd, struct arphdr *hdr);
+
+static void handle_ethernet_receive(LCD *lcd, ENC *enc);
 static void handle_arp(LCD *lcd, ENC *enc);
 
 uint8_t event_queue_push(event_t event) {
@@ -47,6 +49,7 @@ void event_queue_handle_event(event_t eventid, ...) {
     LCD *lcd = va_arg(list, LCD *);
     ENC *enc = va_arg(list, ENC *);
 
+    static uint8_t cnt;
 
     switch (eventid) {
         case EVENT_QUEUE_EMPTY:
@@ -56,10 +59,8 @@ void event_queue_handle_event(event_t eventid, ...) {
             lcd_write(lcd, "QUEUE FULL\n");
             break;
         case EVENT_ETHERNET_RECEIVE:
-            lcd_write(lcd, "ENET RECEIVE EVENT\n");
-            enc_read_frame(enc);
-            if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_ARP)
-                event_queue_push(EVENT_ARP_RECEIVE);
+            lcd_write(lcd, "%d: ENET RX EVENT\n", ++cnt);
+            handle_ethernet_receive(lcd, enc);
             break;
         case EVENT_LCD_WRITE:
             lcd_write(lcd, "LCD WRITE EVENT\n");
@@ -68,27 +69,40 @@ void event_queue_handle_event(event_t eventid, ...) {
             lcd_write(lcd, "ARP RECEIVE EVENT\n");
             handle_arp(lcd, enc);
             break;
+        case EVENT_IPV4_RECEIVE:
+            lcd_write(lcd, "IPV4 RECEIVE EVENT\n");
+            break;
+        case EVENT_IPV6_RECEIVE:
+            lcd_write(lcd, "IPV4 RECEIVE EVENT\n");
+            break;
         default:
             lcd_write(lcd, "UNKNOWN EVENT\n");
             break;
     }
 }
 
+static void handle_ethernet_receive(LCD *lcd, ENC *enc) {
+    enc_read_frame(enc);
+    if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_ARP)
+        event_queue_push(EVENT_ARP_RECEIVE);
+    if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_IPV4)
+        event_queue_push(EVENT_IPV4_RECEIVE);
+    if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_IPV6)
+        event_queue_push(EVENT_IPV6_RECEIVE);
+}
+
 static void handle_arp(LCD *lcd, ENC *enc) {
     uint8_t arppkt[ENET_HEADER_SIZE + ARP_SIZE];
     struct arphdr *arptr = (struct arphdr *) (arppkt + ENET_DATA_OFFSET);
     struct enethdr *enetptr = (struct enethdr *) arppkt;
-    if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_ARP)
-        print_arp_packet(lcd, (struct arphdr *) (enc_rx_buffer + ENET_DATA_OFFSET));
-        memcopy(enetptr->dest, ((struct enethdr *) enc_rx_buffer)->src, ENET_HEADER_DEST_LEN);
-        memcopy(enetptr->src, (uint8_t[]) {0xA0, 0xCD, 0xEF, 0x12, 0x34, 0x56}, ENET_HEADER_SRC_LEN);
-        enetptr->type = hton16(ETHERTYPE_ARP);
-        arp_reply(arppkt + ENET_DATA_OFFSET, (enc_rx_buffer + ENET_DATA_OFFSET), enetptr->dest);
-        memcopy(arptr->hwtarget, enetptr->dest, ENET_HEADER_SRC_LEN);
-        memcopy(arptr->hwsender, (uint8_t[]) {0xA0, 0xCD, 0xEF, 0x12, 0x34, 0x56}, ENET_HEADER_SRC_LEN);
-        arptr->ptarget = arptr->psender;
-        arptr->psender = hton32(0xC0A8006F);
-        enc_write_frame(enc, arppkt, sizeof(arppkt));
+    memcopy(enetptr->dest, ((struct enethdr *) enc_rx_buffer)->src, ENET_HEADER_DEST_LEN);
+    memcopy(enetptr->src, enc->mac, ENET_HEADER_SRC_LEN);
+    enetptr->type = hton16(ETHERTYPE_ARP);
+    arp_reply((struct arphdr *) (arppkt + ENET_DATA_OFFSET), (struct arphdr *) (enc_rx_buffer + ENET_DATA_OFFSET));
+    memcopy(arptr->hwsender, enc->mac, ENET_HEADER_SRC_LEN);
+    enc_write_frame(enc, arppkt, sizeof(arppkt));
+    enc_acknowledge_frame();
+    enc_frame_waiting = 0;
 }
 
 void print_arp_packet(LCD *lcd, struct arphdr *hdr) {
