@@ -117,8 +117,8 @@ static void handle_ipv4(LCD *lcd, ENC *enc) {
     lcd_write(lcd, "Version: %d\n", hton16(iptr->len));
     lcd_write(lcd, "ID: %d\n", hton16(iptr->id));
     lcd_write(lcd, "Version: %d\n", iptr->version);
-    lcd_write(lcd, "Flags: %d\n", iptr->flags);
-    lcd_write(lcd, "Offset: %d\n", iptr->frgment_offset);
+    lcd_write(lcd, "Flags: %d\n", (hton16(iptr->frag_offset) >> 13) & 7);
+    lcd_write(lcd, "Offset: %d\n", hton16(iptr->frag_offset) & 0x1FFF);
     lcd_write(lcd, "TTL: %d\n", iptr->ttl);
     lcd_write(lcd, "Protocol: %d\n", iptr->protocol);
     lcd_write(lcd, "Checksum: %d\n", hton16(iptr->cksm));
