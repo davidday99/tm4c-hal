@@ -23,6 +23,7 @@
   button is pressed on board
 */
 #include "startup.h"
+#include "tm4c123gh6pm.h"  // get access to macros during debug
 
 // +-----------------------------------------------------------------------------------+
 // +										            Vector Table                                       +
