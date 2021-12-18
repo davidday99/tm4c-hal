@@ -4,6 +4,9 @@
 #include "gpio_module.h"
 #include "tm4c123gh6pm.h"
 #include "ethernet.h"
+#include "lcd.h"
+
+extern LCD lcd;
 
 #define RCR_OPCODE 0
 #define RBM_OPCODE 0x20
@@ -175,8 +178,11 @@ void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes
         read_ssi(enc28j60->ssi, &data[j++], 1);
     }
     set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi))
+    while ((!ssi_rx_empty(enc28j60->ssi)) && j < bytes) 
         read_ssi(enc28j60->ssi, &data[j++], 1);
+
+    while (!ssi_rx_empty(enc28j60->ssi))
+        read_ssi(enc28j60->ssi, dummy, 1);
 }
 
 static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data) {
@@ -316,7 +322,7 @@ static void init_mac_registers(struct ENC28J60 *enc28j60) {
     write_control_register(enc28j60, MACON1, 0xF);  // enable receiving of all frames + flow control
     
     // enable padding, append CRC, no proprietary header, no large frames, check frame length, full-duplex
-    write_control_register(enc28j60, MACON3, 0xB3);
+    write_control_register(enc28j60, MACON3, 0x33);
     write_control_register(enc28j60, MACON4, 0x40);  // init defer and backoff settings, applies to half-duplex only? needed?
 
     write_control_register(enc28j60, MAMXFLL, 0xEE);  // max frame size is 1518 bytes
@@ -408,7 +414,7 @@ static uint8_t init_success(struct ENC28J60 *enc28j60) {
     bit_field_set(enc28j60, ECON1, 2);                    
 
     success &= read_control_register(enc28j60, MACON1, 0) == 0xF;
-    success &= read_control_register(enc28j60, MACON3, 0) == 0xB3;
+    success &= read_control_register(enc28j60, MACON3, 0) == 0x33;
     success &= read_control_register(enc28j60, MACON4, 0) == 0x40;
     success &= ((uint16_t) (read_control_register(enc28j60, MAMXFLL, 0) |
                 (read_control_register(enc28j60, MAMXFLH, 0) << 8))) == 0x05EE;
@@ -537,6 +543,8 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     uint16_t type;
     uint8_t fcs[4];
 
+    lcd_write(&lcd, "READ\n");
+
 
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
@@ -545,16 +553,35 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     read_buffer_memory(enc28j60, next_frame, 2);
     read_buffer_memory(enc28j60, rsv, 4);
 
+    uint16_t nf = next_frame[1] | (next_frame[2] << 8);
+    lcd_write(&lcd, "next frame: 0x%x\n", nf);
+
+
     len = (rsv[1] & 0xFF) | (rsv[2] << 8);
+    lcd_write(&lcd, "len: %d\n", len);
 
-    read_buffer_memory(enc28j60, frame, len);
+    if (nf == 0x3f4) {
+        static uint8_t dummy;
+        dummy++;
+    }
+
+    if (len > 1519)
+        len = 1519;  // set maximum to prevent stack overwriting
+
+    read_buffer_memory(enc28j60, data, len);
+
+    if (nf == 0) {
+        nf = 0x17ff;
+    } else {
+        nf -= 1;
+    }
 
 
-    write_control_register(enc28j60, ERXRDPTL, next_frame[1]);
-    write_control_register(enc28j60, ERXRDPTH, next_frame[2]);
+    write_control_register(enc28j60, ERXRDPTL, nf & 0xFF);
+    write_control_register(enc28j60, ERXRDPTH, (nf & 0xFF00) >> 8);
 
-    for (uint16_t i = 0, j = 1; j < len; i++, j++)
-        data[i] = frame[j];
+    // for (uint16_t i = 0, j = 1; j < len; i++, j++)
+    //     data[i] = frame[j];
 
     // bit_field_set(enc28j60, ECON2, 0x40);  // decrement packet count
     
@@ -569,6 +596,8 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     uint8_t tsv[8];
     uint16_t start_addr;
     uint16_t rx_start_addr;
+
+    lcd_write(&lcd, "WRITE\n");
     
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
