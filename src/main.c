@@ -51,6 +51,10 @@ uint8_t transmit[16] = {
 //     return len;
 // }
 
+LCD lcd;
+
+void send_arp_request(LCD *lcd, ENC *enc);
+
 void print_ethernet_frame(LCD *lcd, uint8_t *data, uint16_t len) {
     struct enethdr *hdr = (struct enethdr *) data;
 
@@ -76,7 +80,6 @@ int main(void){
 
     PLL_init();
 
-    LCD lcd;
     ENC enc;
     lcd_init(&lcd);
     
@@ -89,12 +92,14 @@ int main(void){
         lcd_write(&lcd, "Could not init.\n");
     }
 
-    EnableInterrupts();
+    // EnableInterrupts();
 
     while (1) {
-        event_t e = event_queue_pop();
-        if (e == EVENT_QUEUE_EMPTY)
-            continue;
-        event_queue_handle_event(e, &lcd, &enc);
+        send_arp_request(&lcd, &enc);
+        if (get_packet_count(&ENC28J60) > 0)
+            event_queue_push(EVENT_ETHERNET_RECEIVE);
+        event_t e;
+        while  ((e = event_queue_pop()) != EVENT_QUEUE_EMPTY)
+            event_queue_handle_event(e, &lcd, &enc);
     }
 }
