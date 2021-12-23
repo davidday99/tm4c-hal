@@ -200,19 +200,13 @@ void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes
 
 static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data) {
     reg = (reg & 0x1F) | WCR_OPCODE;
-    uint8_t datapacked[2];
-    datapacked[0] = reg;
-    datapacked[1] = data;
     set_gpio_pin_low(enc28j60->cs);
-    // write_ssi(enc28j60->ssi, datapacked, 2);
-    SSI1_DR_R = datapacked[0];
-    SSI1_DR_R = datapacked[1];
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &data, 1);
     while (ssi_is_busy(enc28j60->ssi))
         ;
     set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi)) 
-        // read_ssi(enc28j60->ssi, datapacked, 1);
-        datapacked[0] = SSI1_DR_R;
+    dump_rx_fifo(enc28j60->ssi);
 }
 
 static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
