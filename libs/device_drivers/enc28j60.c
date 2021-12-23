@@ -165,70 +165,43 @@ static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8
 
 static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
     uint8_t cmd = WBM_OPCODE | WBM_ARG0;
-    uint8_t dummy[1];
-    dummy[0] = cmd;
     set_gpio_pin_low(enc28j60->cs);
-    // write_ssi(enc28j60->ssi, dummy, 1);
-    SSI1_DR_R = dummy[0];
-    for (uint16_t i = 0; i < bytes; i++) {
-        // write_ssi(enc28j60->ssi, &data[i], 1);
-        while (!ssi_tx_ready(enc28j60->ssi))
-            ;
-        SSI1_DR_R = data[i];
-    }
+    write_ssi(enc28j60->ssi, &cmd, 1);
+    write_ssi(enc28j60->ssi, data, bytes);
     while (ssi_is_busy(enc28j60->ssi))
         ;
     set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi)) 
-        // read_ssi(enc28j60->ssi, dummy, 1);
-        dummy[0] = SSI1_DR_R;
+    dump_rx_fifo(enc28j60->ssi);
 }
 
 static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
     reg = (reg & 0x1F) | BFS_OPCODE;
-    uint8_t data[2];
-    data[0] = reg;
-    data[1] = bitfield;
     set_gpio_pin_low(enc28j60->cs);
-    // write_ssi(enc28j60->ssi, data, 2);
-    SSI1_DR_R = data[0];
-    SSI1_DR_R = data[1];
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &bitfield, 1);
     while (ssi_is_busy(enc28j60->ssi))
         ;
     set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi)) 
-        // read_ssi(enc28j60->ssi, data, 1);
-        data[0] = SSI1_DR_R;
+    dump_rx_fifo(enc28j60->ssi);
 }
 
 static void bit_field_clear(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
     reg = (reg & 0x1F) | BFC_OPCODE;
-    uint8_t data[2];
-    data[0] = reg;
-    data[1] = bitfield;
     set_gpio_pin_low(enc28j60->cs);
-    // write_ssi(enc28j60->ssi, data, 2);
-    SSI1_DR_R = data[0];
-    SSI1_DR_R = data[1];
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &bitfield, 1);
     while (ssi_is_busy(enc28j60->ssi))
         ;
     set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi)) 
-        // read_ssi(enc28j60->ssi, data, 1);
-        data[0] = SSI1_DR_R;
+    dump_rx_fifo(enc28j60->ssi);
 }
 
 static void system_reset(struct ENC28J60 *enc28j60) {
     uint8_t cmd = SRC_OPCODE | SRC_ARG0;
     set_gpio_pin_low(enc28j60->cs);
-    // write_ssi(enc28j60->ssi, &cmd, 1);
-    SSI1_DR_R = cmd;
-    while (ssi_is_busy(enc28j60->ssi))
-        ;
+    write_ssi(enc28j60->ssi, &cmd, 1);
     set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi)) 
-        // read_ssi(enc28j60->ssi, &cmd, 1);
-        cmd = SSI1_DR_R;
+    dump_rx_fifo(enc28j60->ssi);
 }
 
 static void ENC28J60_init_peripherals(struct ENC28J60 *enc28j60) {
