@@ -429,15 +429,6 @@ void ENC28J60_get_mac_address(struct ENC28J60 *enc28j60, uint8_t *buf) {
     bit_field_set(enc28j60, ECON1, bank);
 }
 
-void ENC28J60_enable_loopback_mode(struct ENC28J60 *enc28j60) {
-    uint16_t current;
-
-    current = read_phy_register(enc28j60, PHCON1);
-    current |= 0x4000;
-
-    write_phy_register(enc28j60, PHCON1, current);
-}
-
 void ENC28J60_get_tx_status_vec(struct ENC28J60 *enc28j60, uint8_t *tsv) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
