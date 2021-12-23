@@ -125,64 +125,18 @@ struct ENC28J60 ENC28J60 = {
 
 extern LCD lcd;
 
-void delay_50ns(uint32_t n) {
-    uint8_t volatile delay = 40;
-    while (n) {
-        while (delay--)
-            ;
-        n--;
-    }
-}
-
-void write_nop(struct ENC28J60 *enc28j60) {
-    uint8_t datapacked[1];
-    datapacked[0] = NOP;
-    set_gpio_pin_low(enc28j60->cs);
-    // write_ssi(enc28j60->ssi, datapacked, 1);
-    SSI1_DR_R = datapacked[0];
-    while (ssi_is_busy(enc28j60->ssi))
-        ;
-    set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi)) 
-        // read_ssi(enc28j60->ssi, datapacked, 1);
-        datapacked[0] = SSI1_DR_R;
-}
-
 static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t ethreg) {
     reg = (reg & 0x1F) | RCR_OPCODE;
-    uint8_t read;
-
-    uint8_t dummy[3];
-    dummy[0] = (uint16_t) reg;
-    dummy[1] = NOP;
-    dummy[2] = NOP;
-    uint8_t data[3];
+    uint8_t data[2];
     set_gpio_pin_low(enc28j60->cs);
 
-    //write_ssi(enc28j60->ssi, dummy, ethreg ? 2 : 3);
-    // read_ssi(enc28j60->ssi, data, ethreg ? 2 : 3);
-
-    if (ethreg) {
-        for (uint8_t i = 0; i < 2; i++)
-            SSI1_DR_R = dummy[i];
-    } else {
-        for (uint8_t i = 0; i < 3; i++)
-            SSI1_DR_R = dummy[i];
-    }
-
+    write_ssi(enc28j60->ssi, &reg, 1);
     while (ssi_is_busy(enc28j60->ssi))
         ;
-        
-    if (ethreg) {
-        for (uint8_t i = 0; i < 2; i++)
-            data[i] = SSI1_DR_R;
-    } else {
-        for (uint8_t i = 0; i < 3; i++)
-            data[i] = SSI1_DR_R;
-    }
-
+    dump_rx_fifo(enc28j60->ssi);
+    read_ssi(enc28j60->ssi, data, ethreg ? 1 : 2, NOP);
     set_gpio_pin_high(enc28j60->cs);
-    return ethreg ? data[1] : data[2];
+    return ethreg ? data[0] : data[1];
 }
 
 void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
