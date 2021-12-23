@@ -470,7 +470,7 @@ uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     return init_success(enc28j60);
 }
 
-void enc28j60_decrement_packet_count(struct ENC28J60 *enc28j60) {
+void ENC28J60_decrement_packet_count(struct ENC28J60 *enc28j60) {
     bit_field_set(enc28j60, ECON2, 0x40);  // decrement packet count
 }
 
