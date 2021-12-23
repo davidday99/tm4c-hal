@@ -75,12 +75,17 @@ void disable_ssi(struct SSI *ssi) {
     set_SSICR1SSE_low(ssi->module);
 }
 
-uint32_t read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
-    return read_SSIDR_into_array(ssi->module, data, size);
+void read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size, uint8_t nop) {
+    read_n_bytes_from_SSIDR(ssi->module, data, size, nop);
 }
 
 void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
-    write_array_SSIDR(ssi->module, data, size);
+    write_n_bytes_to_SSIDR(ssi->module, data, size);
+}
+
+uint8_t dump_rx_fifo(struct SSI *ssi) {
+    while (!SSI_rx_empty(ssi->module))
+        read_SSIDR(ssi->module);
 }
 
 static void init_ssi_afsel(struct SSI *ssi) {

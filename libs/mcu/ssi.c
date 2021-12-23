@@ -103,6 +103,23 @@ uint32_t read_SSIDR_into_array(enum SSI_MODULE module, uint8_t *data, uint32_t b
     return i;
 }
 
+void read_n_bytes_from_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t n, uint8_t nop) {
+    for (uint32_t i = 0; i < n; i++) {
+        *(SSI[module].SSIDR) = nop;
+        while (SSI_bsy(module))
+            ;
+        data[i] = *(SSI[module].SSIDR) & 0xFF;  // byte-sized
+    }
+}
+
+void write_n_bytes_to_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t n) {
+    for (uint32_t i = 0; i < n; i++) {
+        while (SSI_tx_full(module))
+            ;
+        *(SSI[module].SSIDR) = data[i];
+    }
+}
+
 uint8_t SSI_bsy(enum SSI_MODULE module) {
     return (*(SSI[module].SSISR) & SSI_SR_BSY) != 0;
 }
