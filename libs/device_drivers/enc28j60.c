@@ -187,34 +187,15 @@ static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uin
 
 void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
     uint8_t cmd = RBM_OPCODE | RBM_ARG0;
-    uint8_t dummy[2];
-    dummy[0] = cmd;
-    dummy[1] = NOP;
     if (!ssi_rx_empty(enc28j60->ssi))
         lcd_write(&lcd, "RX NOT EMPTY!\n");
     set_gpio_pin_low(enc28j60->cs);
-    // write_ssi(enc28j60->ssi, dummy, 1);
-    // read_ssi(enc28j60->ssi, data, 1);
-    SSI1_DR_R = dummy[0];
-    while (!ssi_rx_ready(enc28j60->ssi) || ssi_is_busy(enc28j60->ssi))
-            ;
-    data[0] = SSI1_DR_R;
-    for (uint16_t i = 0; i < bytes; i++) {
-        //write_ssi(enc28j60->ssi, &dummy[1], 1);
-        //read_ssi(enc28j60->ssi, &data[j++], 1);
-        while (!ssi_rx_ready(enc28j60->ssi) || ssi_is_busy(enc28j60->ssi))
-            ;
-        SSI1_DR_R = NOP;
-        while (!ssi_rx_ready(enc28j60->ssi) || ssi_is_busy(enc28j60->ssi))
-            ;
-        data[i] = SSI1_DR_R;
-    }
+    write_ssi(enc28j60->ssi, &cmd, 1);
     while (ssi_is_busy(enc28j60->ssi))
         ;
+    dump_rx_fifo(enc28j60->ssi);
+    read_ssi(enc28j60->ssi, data, bytes, NOP);
     set_gpio_pin_high(enc28j60->cs);
-    while (!ssi_rx_empty(enc28j60->ssi))
-        // read_ssi(enc28j60->ssi, &data[j++], 1);
-        dummy[0] = SSI1_DR_R;
 }
 
 static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data) {
@@ -600,6 +581,11 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     read_buffer_memory(enc28j60, rsv, 4);
 
     lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
+    
+    uint16_t rdptr = read_control_register(enc28j60, ERDPTL, 1) | (read_control_register(enc28j60, ERDPTH,1) << 8);
+
+    lcd_write(&lcd, "ERDPT: 0x%x\n", rdptr);
+
 
     len = (rsv[0] & 0xFF) | (rsv[1] << 8);
         
@@ -649,11 +635,11 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     // write_control_register(enc28j60, ETXSTL, start_addr & 0xFF);
     // write_control_register(enc28j60, ETXSTH, (start_addr & 0xFF00) >> 8);
 
+    write_control_register(enc28j60, EWRPTL, start_addr & 0xFF);
+    write_control_register(enc28j60, EWRPTH, (start_addr & 0xFF00) >> 8);
+
     write_control_register(enc28j60, ETXNDL, (start_addr + size) & 0xFF);
     write_control_register(enc28j60, ETXNDH, ((start_addr + size) & 0xFF00) >> 8);
-
-    write_control_register(enc28j60, EWRPTL, (start_addr + size) & 0xFF);
-    write_control_register(enc28j60, EWRPTH, ((start_addr + size) & 0xFF00) >> 8);
 
     write_buffer_memory(enc28j60, &control, 1);
     write_buffer_memory(enc28j60, data, size);
