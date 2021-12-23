@@ -108,7 +108,7 @@ void read_n_bytes_from_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t n, 
         *(SSI[module].SSIDR) = nop;
         while (SSI_bsy(module))
             ;
-        data[i] = *(SSI[module].SSIDR) & 0xFF;  // byte-sized
+        data[i] = *(SSI[module].SSIDR);
     }
 }
 
