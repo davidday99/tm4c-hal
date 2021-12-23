@@ -139,6 +139,55 @@ static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uin
     return ethreg ? data[0] : data[1];
 }
 
+static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data) {
+    reg = (reg & 0x1F) | WCR_OPCODE;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &data, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
+    set_gpio_pin_high(enc28j60->cs);
+    dump_rx_fifo(enc28j60->ssi);
+}
+
+static uint16_t read_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr) {
+    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
+    bit_field_set(enc28j60, ECON1, 2);
+
+    write_control_register(enc28j60, MIREGADR, phy_addr);
+    write_control_register(enc28j60, MICMD, 1);
+
+    while (read_control_register(enc28j60, MISTAT, 0) & 1)  // poll MIISTAT.BUSY bit
+        ;
+
+    write_control_register(enc28j60, MICMD, 0);
+
+    uint16_t data = read_control_register(enc28j60, MIRDL, 0) | (read_control_register(enc28j60, MIRDH, 0) << 8);
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+
+    return data;
+}
+
+static uint16_t write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value) {
+    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
+    bit_field_set(enc28j60, ECON1, 2);
+
+    write_control_register(enc28j60, MIREGADR, phy_addr);
+    write_control_register(enc28j60, MIWRL, value & 0xFF);
+    write_control_register(enc28j60, MIWRH, (value & 0xFF00) >> 8);
+
+
+    while (read_control_register(enc28j60, MISTAT, 0) & 1)  // poll MIISTAT.BUSY bit
+        ;
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+}
+
 void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
     uint8_t cmd = RBM_OPCODE | RBM_ARG0;
     if (!ssi_rx_empty(enc28j60->ssi))
@@ -150,17 +199,6 @@ void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes
     dump_rx_fifo(enc28j60->ssi);
     read_ssi(enc28j60->ssi, data, bytes, NOP);
     set_gpio_pin_high(enc28j60->cs);
-}
-
-static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data) {
-    reg = (reg & 0x1F) | WCR_OPCODE;
-    set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, &reg, 1);
-    write_ssi(enc28j60->ssi, &data, 1);
-    while (ssi_is_busy(enc28j60->ssi))
-        ;
-    set_gpio_pin_high(enc28j60->cs);
-    dump_rx_fifo(enc28j60->ssi);
 }
 
 static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
@@ -292,44 +330,6 @@ static void init_mac_registers(struct ENC28J60 *enc28j60) {
     write_control_register(enc28j60, MAADR4, 0x01);
     write_control_register(enc28j60, MAADR5, 0x23);
     write_control_register(enc28j60, MAADR6, 0x45);
-
-    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
-    bit_field_set(enc28j60, ECON1, bank);
-}
-
-static uint16_t read_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr) {
-    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
-    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
-    bit_field_set(enc28j60, ECON1, 2);
-
-    write_control_register(enc28j60, MIREGADR, phy_addr);
-    write_control_register(enc28j60, MICMD, 1);
-
-    while (read_control_register(enc28j60, MISTAT, 0) & 1)  // poll MIISTAT.BUSY bit
-        ;
-
-    write_control_register(enc28j60, MICMD, 0);
-
-    uint16_t data = read_control_register(enc28j60, MIRDL, 0) | (read_control_register(enc28j60, MIRDH, 0) << 8);
-
-    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
-    bit_field_set(enc28j60, ECON1, bank);
-
-    return data;
-}
-
-static uint16_t write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value) {
-    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
-    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
-    bit_field_set(enc28j60, ECON1, 2);
-
-    write_control_register(enc28j60, MIREGADR, phy_addr);
-    write_control_register(enc28j60, MIWRL, value & 0xFF);
-    write_control_register(enc28j60, MIWRH, (value & 0xFF00) >> 8);
-
-
-    while (read_control_register(enc28j60, MISTAT, 0) & 1)  // poll MIISTAT.BUSY bit
-        ;
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
@@ -507,15 +507,8 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
 
     lcd_write(&lcd, "ERDPT: 0x%x\n", rdptr);
 
-
     len = (rsv[0] & 0xFF) | (rsv[1] << 8);
         
-    static uint8_t dummy;
-
-    if (len != 64) {
-        dummy++;
-    }
-
     lcd_write(&lcd, "len: %d\n", len);
 
     read_buffer_memory(enc28j60, frame, len);
@@ -525,8 +518,6 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
 
     for (uint16_t i = 0, j = 1; j < len; i++, j++)
         data[i] = frame[j];
-
-    // bit_field_set(enc28j60, ECON2, 0x40);  // decrement packet count
     
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
@@ -550,12 +541,6 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     rx_start_addr = read_control_register(enc28j60, ERXSTL, 1) |
                     (read_control_register(enc28j60, ERXSTH, 1) << 8);
 
-
-    // start_addr = (start_addr + size + 7 < rx_start_addr && start_addr > 0) ? start_addr + 8 : 0; 
-
-    // write_control_register(enc28j60, ETXSTL, start_addr & 0xFF);
-    // write_control_register(enc28j60, ETXSTH, (start_addr & 0xFF00) >> 8);
-
     write_control_register(enc28j60, EWRPTL, start_addr & 0xFF);
     write_control_register(enc28j60, EWRPTH, (start_addr & 0xFF00) >> 8);
 
@@ -571,11 +556,6 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
         ;
 
     ENC28J60_get_tx_status_vec(enc28j60, tsv);
-
-    static uint8_t dummy;
-    if (tsv[0] != 0x40) {
-        dummy++;
-    }
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
