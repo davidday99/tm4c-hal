@@ -92,13 +92,12 @@ int main(void){
         lcd_write(&lcd, "Could not init.\n");
     }
 
-    // EnableInterrupts();
+    EnableInterrupts();
+    event_t e;
 
     while (1) {
         send_arp_request(&lcd, &enc);
-        if (ENC28J60_get_packet_count(&ENC28J60) > 0)
-            event_queue_push(EVENT_ETHERNET_RECEIVE);
-        event_t e;
+        Delay1s();
         while  ((e = event_queue_pop()) != EVENT_QUEUE_EMPTY)
             event_queue_handle_event(e, &lcd, &enc);
     }
