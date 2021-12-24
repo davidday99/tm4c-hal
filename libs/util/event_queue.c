@@ -24,6 +24,7 @@ static uint8_t event_queue_wrptr;
 void print_arp_packet(LCD *lcd, struct arphdr *hdr);
 
 static void handle_ethernet_receive(LCD *lcd, ENC *enc);
+static void handle_ethernet_frame_waiting(LCD *lcd, ENC *enc);
 void handle_arp(LCD *lcd, ENC *enc);
 static void handle_ipv4(LCD *lcd, ENC *enc);
 
@@ -64,6 +65,8 @@ void event_queue_handle_event(event_t eventid, ...) {
             lcd_write(lcd, "%d: ENET RX EVENT\n", ++cnt);
             handle_ethernet_receive(lcd, enc);
             break;
+        case EVENT_ETHERNET_FRAME_WAITING:
+            handle_ethernet_frame_waiting(lcd, enc);
         case EVENT_LCD_WRITE:
             lcd_write(lcd, "LCD WRITE EVENT\n");
             break;
@@ -85,7 +88,6 @@ void event_queue_handle_event(event_t eventid, ...) {
 }
 
 static void handle_ethernet_receive(LCD *lcd, ENC *enc) {
-    enc_clear_interrupt_flag();
     enc_read_frame(enc);
     if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_ARP)
         event_queue_push(EVENT_ARP_RECEIVE);
@@ -93,6 +95,14 @@ static void handle_ethernet_receive(LCD *lcd, ENC *enc) {
         event_queue_push(EVENT_IPV4_RECEIVE);
     if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_IPV6)
         event_queue_push(EVENT_IPV6_RECEIVE);
+}
+
+static void handle_ethernet_frame_waiting(LCD *lcd, ENC *enc) {
+    enc_clear_interrupt_flag();
+    /* This function needs to do more than this. It needs to check exactly how many 
+        packets have been missed since the interrupt was triggered and push an
+        ETHERNET_RECEIVE event for each one.
+    */
 }
 
 void handle_arp(LCD *lcd, ENC *enc) {
