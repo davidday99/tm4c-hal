@@ -16,6 +16,9 @@ struct SSI {
     volatile uint32_t *SSICC;
 };
 
+uint32_t bcount;
+uint32_t xpsr;
+
 static struct SSI SSI[] = {
     {&SSI0_CR0_R, &SSI0_CR1_R, &SSI0_DR_R, &SSI0_SR_R, &SSI0_CPSR_R, &SSI0_IM_R,
     &SSI0_RIS_R, &SSI0_MIS_R, &SSI0_ICR_R, &SSI0_DMACTL_R, &SSI0_CC_R},
@@ -87,11 +90,34 @@ void write_array_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t len) {
 }
 
 uint32_t read_SSIDR_into_array(enum SSI_MODULE module, uint8_t *data, uint32_t bytes) {
+    // if ((uint32_t) data >= 0x20008000) {
+    //     static uint8_t dummy;
+    //     return ++dummy;
+    // }
     uint32_t i = 0;
+    bcount = bytes;
+    xpsr = (uint32_t) (*((volatile uint32_t *) 0x01000000));
     while (i < bytes && !SSI_rx_empty(module)) {
         data[i++] = read_SSIDR(module);
     }
     return i;
+}
+
+void read_n_bytes_from_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t n, uint8_t nop) {
+    for (uint32_t i = 0; i < n; i++) {
+        *(SSI[module].SSIDR) = nop;
+        while (SSI_bsy(module))
+            ;
+        data[i] = *(SSI[module].SSIDR);
+    }
+}
+
+void write_n_bytes_to_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t n) {
+    for (uint32_t i = 0; i < n; i++) {
+        while (SSI_tx_full(module))
+            ;
+        *(SSI[module].SSIDR) = data[i];
+    }
 }
 
 uint8_t SSI_bsy(enum SSI_MODULE module) {
