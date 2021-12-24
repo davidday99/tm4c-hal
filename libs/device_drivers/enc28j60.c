@@ -418,6 +418,8 @@ static void system_reset(struct ENC28J60 *enc28j60) {
     uint8_t cmd = SRC_OPCODE | SRC_ARG0;
     set_gpio_pin_low(enc28j60->cs);
     write_ssi(enc28j60->ssi, &cmd, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
     set_gpio_pin_high(enc28j60->cs);
     dump_rx_fifo(enc28j60->ssi);
 }
