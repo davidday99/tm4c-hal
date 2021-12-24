@@ -176,7 +176,6 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     uint16_t len;
     uint8_t next_frame[2];
     uint8_t rsv[4];
-    uint8_t frame[1518];
     uint8_t dest_mac[6];
     uint8_t src_mac[6];
     uint16_t type;
@@ -194,19 +193,17 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     
     uint16_t rdptr = read_control_register(enc28j60, ERDPTL, 1) | (read_control_register(enc28j60, ERDPTH,1) << 8);
 
-    lcd_write(&lcd, "ERDPT: 0x%x\n", rdptr);
-
     len = (rsv[0] & 0xFF) | (rsv[1] << 8);
+
+    if (len > 1518)
+        return len;
         
     lcd_write(&lcd, "len: %d\n", len);
 
-    read_buffer_memory(enc28j60, frame, len);
+    read_buffer_memory(enc28j60, data, len);
 
     write_control_register(enc28j60, ERXRDPTL, next_frame[0]);
     write_control_register(enc28j60, ERXRDPTH, next_frame[1]);
-
-    for (uint16_t i = 0, j = 1; j < len; i++, j++)
-        data[i] = frame[j];
     
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
@@ -241,11 +238,6 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
 
     bit_field_set(enc28j60, ECON1, 0x08);  // start transmission process
 
-    while (read_control_register(enc28j60, ECON1, 1) & 8)
-        ;
-
-    ENC28J60_get_tx_status_vec(enc28j60, tsv);
-
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
 }
@@ -254,6 +246,9 @@ void ENC28J60_get_tx_status_vec(struct ENC28J60 *enc28j60, uint8_t *tsv) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
     bit_field_set(enc28j60, ECON1, 0);
+
+    while (read_control_register(enc28j60, ECON1, 1) & 8)  // ensure current transmission is complete
+        ;
 
     uint16_t current_ptr = read_control_register(enc28j60, ERDPTL, 1) |
                             (read_control_register(enc28j60, ERDPTH, 1) << 8);
