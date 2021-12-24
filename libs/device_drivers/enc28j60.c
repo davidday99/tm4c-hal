@@ -242,7 +242,7 @@ static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16
     dump_rx_fifo(enc28j60->ssi);
 }
 
-static void ENC28J60_init_peripherals(struct ENC28J60 *enc28j60) {
+static void init_peripherals(struct ENC28J60 *enc28j60) {
     init_ssi(enc28j60->ssi);
     init_ssi_clock_prescale_divider(enc28j60->ssi, 16);
     init_ssi_mode(enc28j60->ssi, 0, 0, 0, 0, 8);
@@ -453,7 +453,7 @@ void ENC28J60_get_tx_status_vec(struct ENC28J60 *enc28j60, uint8_t *tsv) {
 }
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
-    ENC28J60_init_peripherals(enc28j60);
+    init_peripherals(enc28j60);
     system_reset(enc28j60);
     init_buffers(enc28j60);
     init_receive_filters(enc28j60);
