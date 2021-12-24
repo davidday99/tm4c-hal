@@ -88,6 +88,7 @@ void event_queue_handle_event(event_t eventid, ...) {
 }
 
 static void handle_ethernet_receive(LCD *lcd, ENC *enc) {
+    enc_clear_interrupt_flag();
     enc_read_frame(enc);
     if (hton16(((struct enethdr *) enc_rx_buffer)->type) == ETHERTYPE_ARP)
         event_queue_push(EVENT_ARP_RECEIVE);

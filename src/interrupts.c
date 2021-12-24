@@ -23,10 +23,10 @@ void GPIOPortB_ISR(void) {
         that are missed during the time between the last interrupt and the point 
         at which the controller's interrupt flag is actually cleared.
     */
-    if (!SSI_bsy(SSI1))
-        enc_clear_interrupt_flag();
-    else
-        event_queue_push(EVENT_ETHERNET_FRAME_WAITING);
+    // if (!SSI_bsy(SSI1))
+    //     enc_clear_interrupt_flag();
+    // else
+    //     event_queue_push(EVENT_ETHERNET_FRAME_WAITING);
     
     /* Check which pin on PORTB triggered the interrupt. PIN2 is connected to the
         ethernet controller's INT pin.
