@@ -221,6 +221,13 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
     bit_field_set(enc28j60, ECON1, 0);
 
+    /* ensure current transmission is complete, only necessary right now since
+        transmission buffer is not currently designed to handle more than one
+        frame at a time.
+    */
+    while (read_control_register(enc28j60, ECON1, 1) & 8)
+        ;
+
     start_addr = read_control_register(enc28j60, ETXSTL, 1) |
                     (read_control_register(enc28j60, ETXSTH, 1) << 8);
 
