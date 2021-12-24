@@ -125,6 +125,36 @@ struct ENC28J60 ENC28J60 = {
 
 extern LCD lcd;
 
+static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
+    reg = (reg & 0x1F) | BFS_OPCODE;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &bitfield, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
+    set_gpio_pin_high(enc28j60->cs);
+    dump_rx_fifo(enc28j60->ssi);
+}
+
+static void bit_field_clear(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
+    reg = (reg & 0x1F) | BFC_OPCODE;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &bitfield, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
+    set_gpio_pin_high(enc28j60->cs);
+    dump_rx_fifo(enc28j60->ssi);
+}
+
+static void system_reset(struct ENC28J60 *enc28j60) {
+    uint8_t cmd = SRC_OPCODE | SRC_ARG0;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, &cmd, 1);
+    set_gpio_pin_high(enc28j60->cs);
+    dump_rx_fifo(enc28j60->ssi);
+}
+
 static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t ethreg) {
     reg = (reg & 0x1F) | RCR_OPCODE;
     uint8_t data[2];
@@ -208,36 +238,6 @@ static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16
     write_ssi(enc28j60->ssi, data, bytes);
     while (ssi_is_busy(enc28j60->ssi))
         ;
-    set_gpio_pin_high(enc28j60->cs);
-    dump_rx_fifo(enc28j60->ssi);
-}
-
-static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
-    reg = (reg & 0x1F) | BFS_OPCODE;
-    set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, &reg, 1);
-    write_ssi(enc28j60->ssi, &bitfield, 1);
-    while (ssi_is_busy(enc28j60->ssi))
-        ;
-    set_gpio_pin_high(enc28j60->cs);
-    dump_rx_fifo(enc28j60->ssi);
-}
-
-static void bit_field_clear(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
-    reg = (reg & 0x1F) | BFC_OPCODE;
-    set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, &reg, 1);
-    write_ssi(enc28j60->ssi, &bitfield, 1);
-    while (ssi_is_busy(enc28j60->ssi))
-        ;
-    set_gpio_pin_high(enc28j60->cs);
-    dump_rx_fifo(enc28j60->ssi);
-}
-
-static void system_reset(struct ENC28J60 *enc28j60) {
-    uint8_t cmd = SRC_OPCODE | SRC_ARG0;
-    set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, &cmd, 1);
     set_gpio_pin_high(enc28j60->cs);
     dump_rx_fifo(enc28j60->ssi);
 }
@@ -403,7 +403,7 @@ uint8_t ENC28J60_disable_receive(struct ENC28J60 *enc28j60) {
     return (read_control_register(enc28j60, ECON1, 1) & 4) == 0; 
 }
 
-uint8_t get_packet_count(struct ENC28J60 *enc28j60) {
+uint8_t ENC28J60_get_packet_count(struct ENC28J60 *enc28j60) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 1
     bit_field_set(enc28j60, ECON1, 1);

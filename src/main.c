@@ -96,7 +96,7 @@ int main(void){
 
     while (1) {
         send_arp_request(&lcd, &enc);
-        if (get_packet_count(&ENC28J60) > 0)
+        if (ENC28J60_get_packet_count(&ENC28J60) > 0)
             event_queue_push(EVENT_ETHERNET_RECEIVE);
         event_t e;
         while  ((e = event_queue_pop()) != EVENT_QUEUE_EMPTY)

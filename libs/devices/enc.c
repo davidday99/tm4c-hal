@@ -31,7 +31,7 @@ uint16_t enc_read_frame(ENC *enc) {
 }
 
 void enc_clear_interrupt_flag() {
-    enc28j60_decrement_packet_count(&ENC28J60);
+    ENC28J60_decrement_packet_count(&ENC28J60);
 }
 
 void enc_acknowledge_frame() {
