@@ -23,7 +23,6 @@ void enc_write_frame(ENC *enc, uint8_t *data, uint16_t len) {
 }
 
 uint16_t enc_read_frame(ENC *enc) {
-    uint8_t data[1518];
     uint16_t len = ENC28J60_read_frame(enc->model, enc_rx_buffer);
     enc_frame_waiting = 1;
     enc_frame_ack = 0;
