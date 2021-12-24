@@ -132,7 +132,7 @@ static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uin
 static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data);
 static uint16_t read_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr);
 static uint16_t write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value);
-void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes);
+static void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes);
 static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes);
 static uint8_t init_success(struct ENC28J60 *enc28j60);
 static void init_peripherals(struct ENC28J60 *enc28j60);
@@ -396,7 +396,7 @@ static uint16_t write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, 
     bit_field_set(enc28j60, ECON1, bank);
 }
 
-void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
+static void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
     uint8_t cmd = RBM_OPCODE | RBM_ARG0;
     if (!ssi_rx_empty(enc28j60->ssi))
         lcd_write(&lcd, "RX NOT EMPTY!\n");
