@@ -125,22 +125,22 @@ struct ENC28J60 ENC28J60 = {
 
 extern LCD lcd;
 
-static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield);
-static void bit_field_clear(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield);
-static void system_reset(struct ENC28J60 *enc28j60);
 static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t ethreg);
 static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data);
 static uint16_t read_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr);
 static uint16_t write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value);
 static void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes);
 static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes);
-static uint8_t init_success(struct ENC28J60 *enc28j60);
+static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield);
+static void bit_field_clear(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield);
+static void system_reset(struct ENC28J60 *enc28j60);
 static void init_peripherals(struct ENC28J60 *enc28j60);
 static void init_buffers(struct ENC28J60 *enc28j60);
 static void init_receive_filters(struct ENC28J60 *enc28j60);
 static void init_interrupts(struct ENC28J60 *enc28j60);
 static void init_mac_registers(struct ENC28J60 *enc28j60);
 static void init_phy_registers(struct ENC28J60 *enc28j60);
+static uint8_t init_success(struct ENC28J60 *enc28j60);
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     init_peripherals(enc28j60);
@@ -303,36 +303,6 @@ void ENC28J60_get_mac_address(struct ENC28J60 *enc28j60, uint8_t *buf) {
     bit_field_set(enc28j60, ECON1, bank);
 }
 
-static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
-    reg = (reg & 0x1F) | BFS_OPCODE;
-    set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, &reg, 1);
-    write_ssi(enc28j60->ssi, &bitfield, 1);
-    while (ssi_is_busy(enc28j60->ssi))
-        ;
-    set_gpio_pin_high(enc28j60->cs);
-    dump_rx_fifo(enc28j60->ssi);
-}
-
-static void bit_field_clear(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
-    reg = (reg & 0x1F) | BFC_OPCODE;
-    set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, &reg, 1);
-    write_ssi(enc28j60->ssi, &bitfield, 1);
-    while (ssi_is_busy(enc28j60->ssi))
-        ;
-    set_gpio_pin_high(enc28j60->cs);
-    dump_rx_fifo(enc28j60->ssi);
-}
-
-static void system_reset(struct ENC28J60 *enc28j60) {
-    uint8_t cmd = SRC_OPCODE | SRC_ARG0;
-    set_gpio_pin_low(enc28j60->cs);
-    write_ssi(enc28j60->ssi, &cmd, 1);
-    set_gpio_pin_high(enc28j60->cs);
-    dump_rx_fifo(enc28j60->ssi);
-}
-
 static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t ethreg) {
     reg = (reg & 0x1F) | RCR_OPCODE;
     uint8_t data[2];
@@ -416,6 +386,36 @@ static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16
     write_ssi(enc28j60->ssi, data, bytes);
     while (ssi_is_busy(enc28j60->ssi))
         ;
+    set_gpio_pin_high(enc28j60->cs);
+    dump_rx_fifo(enc28j60->ssi);
+}
+
+static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
+    reg = (reg & 0x1F) | BFS_OPCODE;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &bitfield, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
+    set_gpio_pin_high(enc28j60->cs);
+    dump_rx_fifo(enc28j60->ssi);
+}
+
+static void bit_field_clear(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield) {
+    reg = (reg & 0x1F) | BFC_OPCODE;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, &reg, 1);
+    write_ssi(enc28j60->ssi, &bitfield, 1);
+    while (ssi_is_busy(enc28j60->ssi))
+        ;
+    set_gpio_pin_high(enc28j60->cs);
+    dump_rx_fifo(enc28j60->ssi);
+}
+
+static void system_reset(struct ENC28J60 *enc28j60) {
+    uint8_t cmd = SRC_OPCODE | SRC_ARG0;
+    set_gpio_pin_low(enc28j60->cs);
+    write_ssi(enc28j60->ssi, &cmd, 1);
     set_gpio_pin_high(enc28j60->cs);
     dump_rx_fifo(enc28j60->ssi);
 }
