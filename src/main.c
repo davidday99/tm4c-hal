@@ -12,6 +12,7 @@
 #include "ip_util.h"
 #include "stdlib.h"
 #include "event_queue.h"
+#include "string.h"
 
 extern void EnableInterrupts();
 extern void DisableInterrupts();
@@ -82,6 +83,11 @@ int main(void){
 
     ENC enc;
     lcd_init(&lcd);
+
+    uint8_t x[] = {1,2,3};
+    uint8_t y[3] = {0,0,0};
+
+    memcpy(y, x, 3);
     
     if (enc_init(&enc)) {
         lcd_write(&lcd, "ENC initialized.\n");
@@ -96,8 +102,8 @@ int main(void){
     event_t e;
 
     while (1) {
-        send_arp_request(&lcd, &enc);
-        Delay1s();
+        // send_arp_request(&lcd, &enc);
+        // Delay1s();
         while  ((e = event_queue_pop()) != EVENT_QUEUE_EMPTY)
             event_queue_handle_event(e, &lcd, &enc);
     }
