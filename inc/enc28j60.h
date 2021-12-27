@@ -3,7 +3,6 @@
 
 #include "ssi_module.h"
 #include "gpio_module.h"
-#include "ethernet.h"
 
 struct ENC28J60 {
     struct SSI *ssi;

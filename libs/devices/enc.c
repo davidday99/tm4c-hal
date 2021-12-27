@@ -1,6 +1,5 @@
 #include <stdint.h>
 #include "enc.h"
-#include "ethernet.h"
 #include "enc28j60.h"
 #include "stdlib.h"
 

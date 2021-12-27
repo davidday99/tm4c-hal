@@ -2,7 +2,6 @@
 #define _ENC_H_
 
 #include <stdint.h>
-#include "ethernet.h"
 
 #define ENC_RX_BUF_LEN 1518
 #define ENC_TX_BUF_LEN 1518
