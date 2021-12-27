@@ -16,39 +16,6 @@ extern void DisableInterrupts();
 extern void StartCritical();
 extern void EndCritical();
 
-void Delay1s(void){
-    unsigned long volatile time = 2400000;
-    while(time){
-        time--;
-    }
-}
-
-uint8_t transmit[16] = {
-    0xAB,
-    0xCD,
-    0xEF,
-    0x01,
-    0x02,
-    0x03,
-    0xC0,
-    0x0C,
-    0xC0,
-    0x0C,
-    0xC0,
-    0x0C,
-    0x00,
-    0x08,
-    0xFF,
-    0xFF
-};
-
-// uint32_t strlen(const char *s) {
-//     uint32_t len = 0;
-//     while (*s++)
-//         len++;
-//     return len;
-// }
-
 LCD lcd;
 
 int main(void){
@@ -79,8 +46,6 @@ int main(void){
     event_t e;
 
     while (1) {
-        // send_arp_request(&lcd, &enc);
-        // Delay1s();
         while  ((e = event_queue_pop()) != EVENT_QUEUE_EMPTY)
             event_queue_handle_event(e, &lcd, &enc);
     }
