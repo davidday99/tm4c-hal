@@ -55,7 +55,7 @@ MKDIR   = @mkdir -p $(@D) #creates folders if not present
 
 #GCC FLAGS
 CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
-CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c    
+CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c
 
 #LINKER FLAGS
 LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler 
@@ -78,7 +78,7 @@ $(OBJ)%.o: libs/**/%.c                #turns .c source files into object files
 	
 bin/$(PROJECT).elf: $(OBJS)      #makecontains debug symbols for GNU GDB
 	$(MKDIR)           
-	$(LD) -o $@ $^ $(LDFLAGS) --gc-sections
+	$(LD) -o $@ $^ $(LDFLAGS)
 
 bin/$(PROJECT).bin: bin/$(PROJECT).elf    #debug symbols for GNU GDB stripped by objcopy,finished binary ready for flashing
 	$(OBJCOPY) -O binary $< $@
