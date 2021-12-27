@@ -7,7 +7,6 @@
 #include "enc.h"
 #include "lcd.h"
 #include "ip_util.h"
-#include "stdlib.h"
 #include "event_queue.h"
 #include <string.h>
 

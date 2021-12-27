@@ -4,7 +4,6 @@
 #include "lcd.h"
 #include "enc.h"
 #include "ip_util.h"
-#include "stdlib.h"
 #include "ipv4.h"
 
 #define EVENT_QUEUE_LEN 100
