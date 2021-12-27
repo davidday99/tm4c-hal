@@ -1,1 +1,0 @@
-/home/david/repos/networking/inc/netcommon.h
