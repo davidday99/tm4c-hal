@@ -60,11 +60,6 @@ int main(void){
 
     ENC enc;
     lcd_init(&lcd);
-
-    uint8_t x[] = {1,2,3};
-    uint8_t y[3] = {0,0,0};
-
-    memcpy(y, x, 3);
     
     uint8_t x[] = {0,0,0};
     uint8_t y[] = {1,2,3};
