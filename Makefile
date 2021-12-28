@@ -52,7 +52,7 @@ DEBUGGER = arm-none-eabi-gdb
 RM      = rm -rf
 MKDIR   = @mkdir -p $(@D) #creates folders if not present
 
-OPT += -Os
+OPT += -O3
 
 #GCC FLAGS
 CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
