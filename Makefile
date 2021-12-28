@@ -52,10 +52,12 @@ DEBUGGER = arm-none-eabi-gdb
 RM      = rm -rf
 MKDIR   = @mkdir -p $(@D) #creates folders if not present
 
+OPT += -Os
 
 #GCC FLAGS
 CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
 CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c -Wextra -Wall -Wno-missing-braces
+CFLAGS += $(OPT)
 
 #LINKER FLAGS
 LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler 
