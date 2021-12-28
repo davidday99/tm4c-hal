@@ -45,7 +45,6 @@ LD_SCRIPT = ld/$(MCU).ld
 
 #UTILITY VARIABLES
 CC = arm-none-eabi-gcc #compiler
-LD = arm-none-eabi-ld #linker
 OBJCOPY = arm-none-eabi-objcopy #final executable builder
 FLASHER = lm4flash #flashing utility
 DEBUGGER = arm-none-eabi-gdb
@@ -56,7 +55,7 @@ OPT += -O3
 
 #GCC FLAGS
 CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
-CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c -Wextra -Wall -Wno-missing-braces
+CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c -Wextra -Wall -Wno-missing-braces -Wno-builtin-declaration-mismatch
 CFLAGS += $(OPT)
 
 #LINKER FLAGS
@@ -80,7 +79,7 @@ $(OBJ)%.o: libs/**/%.c                #turns .c source files into object files
 	
 bin/$(PROJECT).elf: $(OBJS)      #makecontains debug symbols for GNU GDB
 	$(MKDIR)           
-	$(LD) -o $@ $^ /usr/arm-none-eabi/lib/libc.a $(LDFLAGS)
+	$(CC) -o $@ $^ $(LDFLAGS) -nostartfiles -nostdlib
 
 bin/$(PROJECT).bin: bin/$(PROJECT).elf    #debug symbols for GNU GDB stripped by objcopy,finished binary ready for flashing
 	$(OBJCOPY) -O binary $< $@
