@@ -26,14 +26,8 @@ int main(void){
     ENC enc;
     lcd_init(&lcd);
     
-    char x[] = "ENC initialized.\n";
-    char y[18] = {0};
-
-    memcpy(y, x, 18);
-    
     if (enc_init(&enc)) {
-        lcd_write(&lcd, x);
-        lcd_write(&lcd, y);
+        lcd_write(&lcd, "ENC initialized.\n");
         ENC28J60_enable_receive(&ENC28J60) ? lcd_write(&lcd, "Receive enabled.\n") : 
                                     lcd_write(&lcd, "Could not enable.\n");
     } else {
