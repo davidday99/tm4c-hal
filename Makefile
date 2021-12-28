@@ -28,7 +28,7 @@ PROJECT = main
 DEV = /dev/ttyACM0
 
 SRCS = $(wildcard src/*.c) \
-	  $(wildcard libs/**/*.c) \
+	  $(wildcard lib/**/*.c) \
 	  $(wildcard asm/*.s)
 OBJ = obj/
 OBJS = $(addprefix $(OBJ),$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
@@ -66,7 +66,7 @@ $(OBJ)%.o: src/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ $(INC) $(CFLAGS)
 
-$(OBJ)%.o: libs/**/%.c
+$(OBJ)%.o: lib/**/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ $(INC) $(CFLAGS)
 	
