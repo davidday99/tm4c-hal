@@ -67,6 +67,8 @@ void event_queue_handle_event(event_t eventid, ...) {
             break;
         case EVENT_ETHERNET_RECEIVE:
             lcd_write(lcd, "%d: ENET RX EVENT\n", ++cnt);
+            enc_clear_interrupt_flag();
+            enc_read_frame(enc);
             // handle_ethernet_receive(lcd, enc);
             break;
         case EVENT_ETHERNET_FRAME_WAITING:
