@@ -8,7 +8,7 @@
 #include "lcd.h"
 #include "ip_util.h"
 #include "event_queue.h"
-#include <string.h>
+#include "string.h"
 
 extern void EnableInterrupts();
 extern void DisableInterrupts();
