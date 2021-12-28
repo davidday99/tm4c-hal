@@ -191,6 +191,9 @@ const vector_table_t vectors[] = {
 // +-----------------------------------------------------------------------------------+
 // +                Implementations of Interrupt Service Routines                      +
 // +-----------------------------------------------------------------------------------+
+
+#pragma GCC optimize ("O0")
+
 void Reset_Handler(void)
 {
 
