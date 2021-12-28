@@ -5,6 +5,7 @@
 #include "enc.h"
 #include "ip_util.h"
 #include "ipv4.h"
+#include <string.h>
 
 #define EVENT_QUEUE_LEN 100
 
@@ -19,16 +20,23 @@ static uint8_t event_queue_wrptr;
 
 // void print_arp_packet(LCD *lcd, struct arphdr *hdr);
  
-static void handle_ethernet_receive(LCD *lcd, ENC *enc);
-static void handle_ethernet_frame_waiting(LCD *lcd, ENC *enc);
+// static void handle_ethernet_receive(LCD *lcd, ENC *enc);
+// static void handle_ethernet_frame_waiting(LCD *lcd, ENC *enc);
 void handle_arp(LCD *lcd, ENC *enc);
-static void handle_ipv4(LCD *lcd, ENC *enc);
+// static void handle_ipv4(LCD *lcd, ENC *enc);
 
 uint8_t event_queue_push(event_t event) {
     if (event_queue_wrptr == event_queue_rdptr - 1)
         return 0;
     event_queue[event_queue_wrptr].eventid = event;
     event_queue_wrptr = (event_queue_wrptr + 1) % EVENT_QUEUE_LEN;
+    
+    uint8_t x[] = {1,2,3};
+    uint8_t y[] = {0,0,0};
+
+    memcpy(y, x, 3);
+
+
     return 1;
 }
 

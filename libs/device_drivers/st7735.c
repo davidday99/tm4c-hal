@@ -528,7 +528,7 @@ static const uint8_t display_init_seq[] = {
  * NOTE: These functions will crash or stall indefinitely if
  * the SSI0 module is not initialized and enabled.
  */
-void static writecommand(struct ST7735 *st7735, uint8_t c) {
+static void writecommand(struct ST7735 *st7735, uint8_t c) {
     while (ssi_is_busy(st7735->ssi))
         ;
     set_gpio_pin_low(st7735->dat_com);
@@ -538,12 +538,12 @@ void static writecommand(struct ST7735 *st7735, uint8_t c) {
         ;
 }
 
-void static writedata(struct ST7735 *st7735, uint8_t c) {
+static void writedata(struct ST7735 *st7735, uint8_t c) {
     set_gpio_pin_high(st7735->dat_com);
     write_ssi(st7735->ssi, &c, 1);
 }
 
-void Delay1ms(uint32_t n){uint32_t volatile time;
+static void Delay1ms(uint32_t n){uint32_t volatile time;
     while(n){
         time = 72724 * 2 / 91;  // 1msec, tuned at 80 MHz
         while(time){
@@ -553,7 +553,7 @@ void Delay1ms(uint32_t n){uint32_t volatile time;
     }
 }
 
-void static execute_command_sequence(struct ST7735 *st7735, const uint8_t *addr) {
+static void execute_command_sequence(struct ST7735 *st7735, const uint8_t *addr) {
 
     uint8_t numCommands, numArgs;
     uint16_t ms;
@@ -588,7 +588,7 @@ void ST7735_toggle_reset(struct ST7735 *st7735) {
     Delay1ms(500);
 }
 
-void static ST7735_init_peripherals(struct ST7735 *st7735) {
+static void ST7735_init_peripherals(struct ST7735 *st7735) {
     init_gpio_port_clock(st7735->dat_com);
     init_gpio_pin_as_output(st7735->dat_com);
     init_gpio_pin_as_output(st7735->rst);
@@ -625,7 +625,7 @@ void ST7735_init(struct ST7735 *st7735) {
  * (same as font table is encoded; different from regular bitmap)
  * Requires 11 bytes of transmission
  */
-void static setAddrWindow(struct ST7735 *st7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
+static void setAddrWindow(struct ST7735 *st7735, uint8_t x0, uint8_t y0, uint8_t x1, uint8_t y1) {
     writecommand(st7735, ST7735_CASET); // Column addr set
 
     writedata(st7735, 0x00);
@@ -646,7 +646,7 @@ void static setAddrWindow(struct ST7735 *st7735, uint8_t x0, uint8_t y0, uint8_t
  * Send two bytes of data, most significant byte first
  * Requires 2 bytes of transmission
  */
-void static pushColor(struct ST7735 *st7735, uint16_t color) {
+static void pushColor(struct ST7735 *st7735, uint16_t color) {
     writedata(st7735, (uint8_t) (color >> 8));
     writedata(st7735, (uint8_t) color);
 }
@@ -662,7 +662,7 @@ void static pushColor(struct ST7735 *st7735, uint16_t color) {
 //               159 is near the wires, 0 is the side opposite the wires
 //        color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
-void ST7735_DrawPixel(struct ST7735 *st7735, uint8_t x, uint8_t y, uint16_t color) {
+void ST7735_DrawPixel(struct ST7735 *st7735, int16_t x, int16_t y, uint16_t color) {
     if((x < 0) || (x >= ST7735_TFTWIDTH) || (y < 0) || (y >= ST7735_TFTHEIGHT))
         return;
 

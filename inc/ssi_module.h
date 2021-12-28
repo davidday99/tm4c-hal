@@ -25,7 +25,7 @@ void enable_ssi(struct SSI *ssi);
 void disable_ssi(struct SSI *ssi);
 void read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size, uint8_t nop);
 void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size);
-uint8_t dump_rx_fifo(struct SSI *ssi);
+void dump_rx_fifo(struct SSI *ssi);
 uint8_t ssi_is_busy(struct SSI *ssi);
 uint8_t ssi_tx_ready(struct SSI *ssi);
 uint8_t ssi_rx_ready(struct SSI *ssi);

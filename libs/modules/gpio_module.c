@@ -58,8 +58,6 @@ struct GPIO_PIN PORTF_PIN5 = {PORTF, PIN5};
 struct GPIO_PIN PORTF_PIN6 = {PORTF, PIN6};
 struct GPIO_PIN PORTF_PIN7 = {PORTF, PIN7};
 
-static const uint32_t GPIO_LOCK = 0x4C4F434B;
-
 static void init_gpio_falling_edge_or_level_low_interrupt(struct GPIO_PIN *gpio_pin);
 static void init_gpio_rising_edge_or_level_high_interrupt(struct GPIO_PIN *gpio_pin);
 

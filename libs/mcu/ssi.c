@@ -44,7 +44,7 @@ void init_SSICR0(enum SSI_MODULE module, uint8_t scr,
         *(SSI[module].SSICR0) |= SSI_CR0_SPO;
 
     *(SSI[module].SSICR0) |= dss;
-
+    *(SSI[module].SSICR0) |= (frf << 4);
 }
 
 void init_SSICR1(enum SSI_MODULE module, uint8_t mode) {

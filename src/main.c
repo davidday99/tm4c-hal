@@ -18,7 +18,6 @@ extern void EndCritical();
 LCD lcd;
 
 int main(void){
-    uint8_t delay = 0;
 
     DisableInterrupts();
 
@@ -27,14 +26,14 @@ int main(void){
     ENC enc;
     lcd_init(&lcd);
     
-    uint8_t x[] = {0,0,0};
-    uint8_t y[] = {1,2,3};
+    char x[] = "ENC initialized.\n";
+    char y[18] = {0};
 
-    memcpy(x, y, 3);
+    memcpy(y, x, 18);
     
     if (enc_init(&enc)) {
-        lcd_write(&lcd, "ENC initialized.\n");
-        lcd_write(&lcd, "Enabling receive.\n");
+        lcd_write(&lcd, x);
+        lcd_write(&lcd, y);
         ENC28J60_enable_receive(&ENC28J60) ? lcd_write(&lcd, "Receive enabled.\n") : 
                                     lcd_write(&lcd, "Could not enable.\n");
     } else {

@@ -127,7 +127,7 @@ extern LCD lcd;
 static uint8_t read_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t ethreg);
 static void write_control_register(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t data);
 static uint16_t read_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr);
-static uint16_t write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value);
+static void write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value);
 static void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes);
 static void write_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes);
 static void bit_field_set(struct ENC28J60 *enc28j60, uint8_t reg, uint8_t bitfield);
@@ -175,10 +175,6 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     uint16_t len;
     uint8_t next_frame[2];
     uint8_t rsv[4];
-    uint8_t dest_mac[6];
-    uint8_t src_mac[6];
-    uint16_t type;
-    uint8_t fcs[4];
 
 
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
@@ -190,8 +186,6 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
 
     lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
     
-    uint16_t rdptr = read_control_register(enc28j60, ERDPTL, 1) | (read_control_register(enc28j60, ERDPTH,1) << 8);
-
     len = (rsv[0] & 0xFF) | (rsv[1] << 8);
 
     if (len > 1518)
@@ -212,9 +206,7 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
 
 void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t size) {
     uint8_t control = 7;
-    uint8_t tsv[7];
     uint16_t start_addr;
-    uint16_t rx_start_addr;
     
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
@@ -229,9 +221,6 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
 
     start_addr = read_control_register(enc28j60, ETXSTL, 1) |
                     (read_control_register(enc28j60, ETXSTH, 1) << 8);
-
-    rx_start_addr = read_control_register(enc28j60, ERXSTL, 1) |
-                    (read_control_register(enc28j60, ERXSTH, 1) << 8);
 
     write_control_register(enc28j60, EWRPTL, start_addr & 0xFF);
     write_control_register(enc28j60, EWRPTH, (start_addr & 0xFF00) >> 8);
@@ -350,7 +339,7 @@ static uint16_t read_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr) {
     return data;
 }
 
-static uint16_t write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value) {
+static void write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int16_t value) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 2
     bit_field_set(enc28j60, ECON1, 2);

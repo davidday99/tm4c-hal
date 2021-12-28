@@ -83,7 +83,7 @@ void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
     write_n_bytes_to_SSIDR(ssi->module, data, size);
 }
 
-uint8_t dump_rx_fifo(struct SSI *ssi) {
+void dump_rx_fifo(struct SSI *ssi) {
     while (!SSI_rx_empty(ssi->module))
         read_SSIDR(ssi->module);
 }

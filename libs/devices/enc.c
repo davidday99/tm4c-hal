@@ -15,6 +15,7 @@ uint8_t enc_init(ENC *enc) {
     enc->model = &ENC28J60;
     uint8_t success = ENC28J60_init(enc->model);
     ENC28J60_get_mac_address(enc->model, enc->mac);
+    return success;
 }
 
 void enc_write_frame(ENC *enc, uint8_t *data, uint16_t len) {

@@ -20,7 +20,6 @@ void lcd_init(LCD *lcd) {
 void lcd_write(LCD *lcd, char *s, ...) {
     char buf[20];
     va_list list;
-    uint32_t val;
     va_start(list, s);
 
     while (*s != '\0') {

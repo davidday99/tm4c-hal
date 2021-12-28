@@ -66,7 +66,7 @@ extern struct ST7735 ST7735;
 #define ST7735_WHITE   0xFFFF
 
 void ST7735_init(struct ST7735 *st7735);
-void ST7735_DrawPixel(struct ST7735 *st7735, uint8_t x, uint8_t y, uint16_t color);
+void ST7735_DrawPixel(struct ST7735 *st7735, int16_t x, int16_t y, uint16_t color);
 void ST7735_DrawFastVLine(struct ST7735 *st7735, uint8_t x, uint8_t y, uint8_t h, uint16_t color);
 void ST7735_DrawFastHLine(struct ST7735 *st7735, uint8_t x, uint8_t y, uint8_t w, uint16_t color);
 void ST7735_FillScreen(struct ST7735 *st7735, unsigned short color);
