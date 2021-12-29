@@ -414,7 +414,7 @@ static void system_reset(struct ENC28J60 *enc28j60) {
 
 static void init_peripherals(struct ENC28J60 *enc28j60) {
     init_ssi(enc28j60->ssi);
-    init_ssi_clock_prescale_divider(enc28j60->ssi, 16);
+    init_ssi_clock_prescale_divider(enc28j60->ssi, 8);
     init_ssi_mode(enc28j60->ssi, 0, 0, 0, 0, 8);
     enable_ssi(enc28j60->ssi);
 
