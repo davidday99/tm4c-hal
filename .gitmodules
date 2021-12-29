@@ -1,0 +1,3 @@
+[submodule "lib/networking/network-stack"]
+	path = lib/networking/network-stack
+	url = git@github.com:davidday99/network-stack.git

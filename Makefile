@@ -30,6 +30,7 @@ DEV = /dev/ttyACM0
 SRCS = $(wildcard src/*.c) \
 	  $(wildcard lib/**/*.c) \
       $(wildcard lib/**/**/*.c) \
+	  $(wildcard lib/networking/network-stack/src/*.c) \
 	  $(wildcard asm/*.s)
 OBJ = obj/
 OBJS = $(addprefix $(OBJ),$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
@@ -56,8 +57,6 @@ CFLAGS += $(OPT)
 
 LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler 
 
-$(info $(OBJS))
-
 all: bin/$(PROJECT).bin
 
 $(OBJ)%.o: asm/%.s
@@ -75,6 +74,10 @@ $(OBJ)%.o: lib/**/%.c
 $(OBJ)%.o: lib/**/**/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ $(INC) $(CFLAGS)
+
+$(OBJ)%.o: lib/networking/network-stack/src/%.c
+	$(MAKE) embedded -C lib/networking/network-stack
+	cp lib/networking/network-stack/eobj/*.o $(OBJ)
 	
 bin/$(PROJECT).elf: $(OBJS)      # make contains debug symbols for GNU GDB
 	$(MKDIR)           
