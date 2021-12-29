@@ -51,7 +51,6 @@ event_t event_queue_pop(void) {
 
 void event_queue_handle_event(event_t eventid, ...) {
     va_list list;
-    uint32_t val;
     va_start(list, eventid);
     LCD *lcd = va_arg(list, LCD *);
     ENC *enc = va_arg(list, ENC *);

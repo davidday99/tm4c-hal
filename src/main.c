@@ -6,9 +6,8 @@
 #include "enc28j60.h"
 #include "enc.h"
 #include "lcd.h"
-#include "ip_util.h"
-#include "event_queue.h"
-#include "string.h"
+#include "producer.h"
+#include "consumer.h"
 
 extern void EnableInterrupts();
 extern void DisableInterrupts();
@@ -16,6 +15,58 @@ extern void StartCritical();
 extern void EndCritical();
 
 LCD lcd;
+ENC enc;
+
+uint8_t arp[] = {
+    0xDE,
+    0xAD,
+    0xBE,
+    0XEF,
+    0xCC,
+    0XCC,
+    0XAB,
+    0xCD,
+    0xEF,
+    0x12,
+    0x34,
+    0x56,
+    0x08,
+    0x00,
+    0x00,
+    0x01,
+    0x08,
+    0x00,
+    0x06,
+    0x04,
+    0x00,
+    0x01,
+    0xDE,
+    0xAD,
+    0xBE,
+    0XEF,
+    0xCC,
+    0XCC,
+    0xC0,
+    0xA8,
+    0x00,
+    0x6E,
+    0XAB,
+    0xCD,
+    0xEF,
+    0x12,
+    0x34,
+    0x56,
+    0xC0,
+    0xA8,
+    0x00,
+    0x01,
+};
+
+void Delay(uint32_t d) {
+    uint32_t volatile delay = d * 80000;
+    while (delay > 0)
+        delay--;
+}
 
 int main(void){
 
@@ -23,7 +74,6 @@ int main(void){
 
     PLL_init();
 
-    ENC enc;
     lcd_init(&lcd);
     
     if (enc_init(&enc)) {
@@ -35,10 +85,20 @@ int main(void){
     }
 
     EnableInterrupts();
-    event_t e;
+
+    producer_event_t p_event;
+    consumer_event_t c_event;
 
     while (1) {
-        while  ((e = event_queue_pop()) != EVENT_QUEUE_EMPTY)
-            event_queue_handle_event(e, &lcd, &enc);
+        Delay(10);
+        enc_write_frame(&enc, arp, 42);
+        Delay(10);
+
+
+        while ((p_event = producer_queue_pop()) != PRODUCER_QUEUE_EMPTY)
+            producer_handle_event(p_event);
+        
+        while ((c_event = consumer_queue_pop()) != CONSUMER_QUEUE_EMPTY)
+            consumer_handle_event(c_event);
     }
 }
