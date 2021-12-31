@@ -8,6 +8,7 @@
 #include "lcd.h"
 #include "producer.h"
 #include "consumer.h"
+#include "ipv4.h"
 
 extern void EnableInterrupts();
 extern void DisableInterrupts();
@@ -31,7 +32,7 @@ uint8_t arp[] = {
     0x34,
     0x56,
     0x08,
-    0x00,
+    0x06,
     0x00,
     0x01,
     0x08,
@@ -83,6 +84,8 @@ int main(void){
     } else {
         lcd_write(&lcd, "Could not init.\n");
     }
+
+    struct ipv4hdr *h = (struct ipv4hdr *) arp;
 
     EnableInterrupts();
 
