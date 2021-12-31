@@ -187,11 +187,10 @@ uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
     lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
     
     len = (rsv[0] & 0xFF) | (rsv[1] << 8);
+    lcd_write(&lcd, "len: %d\n", len);
 
     if (len > 1518)
         return len;
-        
-    lcd_write(&lcd, "len: %d\n", len);
 
     read_buffer_memory(enc28j60, data, len);
 
@@ -414,7 +413,7 @@ static void system_reset(struct ENC28J60 *enc28j60) {
 
 static void init_peripherals(struct ENC28J60 *enc28j60) {
     init_ssi(enc28j60->ssi);
-    init_ssi_clock_prescale_divider(enc28j60->ssi, 8);
+    init_ssi_clock_prescale_divider(enc28j60->ssi, 5);
     init_ssi_mode(enc28j60->ssi, 0, 0, 0, 0, 8);
     enable_ssi(enc28j60->ssi);
 
