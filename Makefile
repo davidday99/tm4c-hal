@@ -35,7 +35,7 @@ SRCS = $(wildcard src/*.c) \
 OBJ = obj/
 OBJS = $(addprefix $(OBJ),$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
 
-INC = -Iinc
+INC = -Iinc -Ilib/networking/network-stack/inc
 
 MCU = TM4C123GH6PM
 
@@ -49,10 +49,10 @@ DEBUGGER = arm-none-eabi-gdb
 RM      = rm -rf
 MKDIR   = @mkdir -p $(@D) # creates folders if not present
 
-OPT += -O3
+OPT += -O0
 
 CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
-CFLAGS += -mfloat-abi=softfp -MD -std=c99 -c -Wextra -Wall -Wno-missing-braces -Wno-builtin-declaration-mismatch
+CFLAGS += -mfloat-abi=softfp -MD -std=c99 -Wextra -Wall -Wno-missing-braces -Wno-builtin-declaration-mismatch
 CFLAGS += $(OPT)
 
 LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler 
@@ -61,19 +61,19 @@ all: bin/$(PROJECT).bin
 
 $(OBJ)%.o: asm/%.s
 	$(MKDIR)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ -c $(CFLAGS)
 
 $(OBJ)%.o: src/%.c
 	$(MKDIR)              
-	$(CC) -o $@ $^ $(INC) $(CFLAGS)
+	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
 $(OBJ)%.o: lib/**/%.c
 	$(MKDIR)              
-	$(CC) -o $@ $^ $(INC) $(CFLAGS)
+	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
 $(OBJ)%.o: lib/**/**/%.c
 	$(MKDIR)              
-	$(CC) -o $@ $^ $(INC) $(CFLAGS)
+	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
 $(OBJ)%.o: lib/networking/network-stack/src/%.c
 	$(MAKE) embedded -C lib/networking/network-stack
@@ -81,7 +81,7 @@ $(OBJ)%.o: lib/networking/network-stack/src/%.c
 	
 bin/$(PROJECT).elf: $(OBJS)      # make contains debug symbols for GNU GDB
 	$(MKDIR)           
-	$(CC) -o $@ $^ $(LDFLAGS) -nostartfiles -nostdlib
+	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS) -nostartfiles -nostdlib
 
 bin/$(PROJECT).bin: bin/$(PROJECT).elf    # debug symbols for GNU GDB stripped by objcopy, finished binary ready for flashing
 	$(OBJCOPY) -O binary $< $@
