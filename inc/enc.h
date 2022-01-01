@@ -19,6 +19,7 @@ extern uint8_t enc_frame_ack;
 
 
 uint8_t enc_init(ENC *enc);
+uint8_t enc_enable(ENC *enc);
 void enc_write_frame(ENC *enc, uint8_t *data, uint16_t len);
 uint16_t enc_read_frame(ENC *enc);
 uint32_t enc_get_mac_address_low(ENC *enc);

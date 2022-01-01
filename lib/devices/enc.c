@@ -18,6 +18,10 @@ uint8_t enc_init(ENC *enc) {
     return success;
 }
 
+uint8_t enc_enable(ENC *enc) {
+    return ENC28J60_enable_receive(enc->model);
+}
+
 void enc_write_frame(ENC *enc, uint8_t *data, uint16_t len) {
     ENC28J60_write_frame(enc->model, data, len);
 }
