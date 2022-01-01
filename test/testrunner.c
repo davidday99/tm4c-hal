@@ -19,8 +19,10 @@ int test1() {
     return 1;
 }
 
+int test_arp_send_many();
+
 int (*test_cases[])(void) = {
-    test1
+    test_arp_send_many
 };
 
 LCD lcd;
