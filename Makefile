@@ -7,9 +7,9 @@ SRCS = $(wildcard src/*.c) \
 	  $(wildcard lib/networking/network-stack/src/*.c) \
 	  $(wildcard asm/*.s)
 TESTS = $(wildcard test/*.c)
-OBJ = obj/
-TESTOBJS = $(addprefix $(OBJ), $(notdir $(TESTS:.c=.o)))
-OBJS = $(addprefix $(OBJ),$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
+OBJ = obj
+TESTOBJS = $(addprefix $(OBJ)/, $(notdir $(TESTS:.c=.o)))
+OBJS = $(addprefix $(OBJ)/,$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
 
 # Target specific
 MCU = TM4C123GH6PM
@@ -42,30 +42,30 @@ test: bin/testrunner.bin
 
 all: build test
 
-$(OBJ)%.o: asm/%.s
+$(OBJ)/%.o: asm/%.s
 	$(MKDIR)
 	$(CC) -o $@ $^ -c $(CFLAGS)
 
-$(OBJ)%.o: src/%.c
+$(OBJ)/%.o: src/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
 
 # TODO: clean up this and the following recipe...
-$(OBJ)%.o: lib/**/%.c
+$(OBJ)/%.o: lib/**/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
-$(OBJ)%.o: lib/**/**/%.c
+$(OBJ)/%.o: lib/**/**/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
-$(OBJ)%.o: test/%.c
+$(OBJ)/%.o: test/%.c
 	$(MKDIR)
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
 # Build network stack library and copy object files from submodule to top
-$(OBJ)%.o: lib/networking/network-stack/src/%.c
+$(OBJ)/%.o: lib/networking/network-stack/src/%.c
 	$(MAKE) embedded -C lib/networking/network-stack
 	cp lib/networking/network-stack/eobj/*.o $(OBJ)
 	
@@ -80,7 +80,7 @@ bin/$(PROJECT).bin: bin/$(PROJECT).elf
 	$(OBJCOPY) -O binary $< $@
 
 # Same as above two recipes but for the test binary.
-bin/testrunner.elf: $(TESTOBJS) $(filter-out obj/main.o, $(OBJS))
+bin/testrunner.elf: $(TESTOBJS) $(filter-out $(OBJ)/main.o, $(OBJS))
 	$(MKDIR)           
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS) 
 
@@ -94,7 +94,7 @@ debug:
 	$(DEBUGGER) $(file) --tui -ex "target remote :3333"
 
 clean:
-	-$(RM) obj
+	-$(RM) $(OBJ)
 	-$(RM) bin
 
 .PHONY: all clean
