@@ -8,6 +8,7 @@ SRCS = $(wildcard src/*.c) \
 	  $(wildcard asm/*.s)
 TESTS = $(wildcard test/*.c)
 OBJ = obj
+BIN = bin
 TESTOBJS = $(addprefix $(OBJ)/, $(notdir $(TESTS:.c=.o)))
 OBJS = $(addprefix $(OBJ)/,$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
 
@@ -32,13 +33,13 @@ LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler
 INC = -Iinc -Ilib/networking/network-stack/inc
 
 # Etc.
-RM      = rm -rf
-MKDIR   = @mkdir -p $(@D) # creates folders if not present
+RM = rm -rf
+MKDIR = @mkdir -p $(@D) # creates folders if not present
 
-build: bin/$(PROJECT).bin
+build: $(BIN)/$(PROJECT).bin
 
-test: bin/testrunner.bin
-	$(FLASHER) -S $(DEV) bin/testrunner.bin
+test: $(BIN)/testrunner.bin
+	$(FLASHER) -S $(DEV) $(BIN)/testrunner.bin
 
 all: build test
 
@@ -70,31 +71,31 @@ $(OBJ)/%.o: lib/networking/network-stack/src/%.c
 	cp lib/networking/network-stack/eobj/*.o $(OBJ)
 	
 # Generate project binary with debug symbols 
-bin/$(PROJECT).elf: $(OBJS)
+$(BIN)/$(PROJECT).elf: $(OBJS)
 	$(MKDIR)           
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
 
 
 # Strip debug symbols
-bin/$(PROJECT).bin: bin/$(PROJECT).elf
+$(BIN)/$(PROJECT).bin: $(BIN)/$(PROJECT).elf
 	$(OBJCOPY) -O binary $< $@
 
 # Same as above two recipes but for the test binary.
-bin/testrunner.elf: $(TESTOBJS) $(filter-out $(OBJ)/main.o, $(OBJS))
+$(BIN)/testrunner.elf: $(TESTOBJS) $(filter-out $(OBJ)/main.o, $(OBJS))
 	$(MKDIR)           
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS) 
 
-bin/testrunner.bin: bin/testrunner.elf
+$(BIN)/testrunner.bin: $(BIN)/testrunner.elf
 	$(OBJCOPY) -O binary $< $@
 
 flash:
-	$(FLASHER) -S $(DEV) bin/$(PROJECT).bin
+	$(FLASHER) -S $(DEV) $(BIN)/$(PROJECT).bin
 
 debug:
 	$(DEBUGGER) $(file) --tui -ex "target remote :3333"
 
 clean:
 	-$(RM) $(OBJ)
-	-$(RM) bin
+	-$(RM) $(BIN)
 
 .PHONY: all clean
