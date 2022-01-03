@@ -3,8 +3,7 @@
 #include "enc.h"
 #include "enc28j60.h"
 
-static ENC _enc;
-static ENC *enc = &_enc;
+extern ENC *enc;
 
 static uint8_t arp[] = {
     0xDE,
@@ -58,14 +57,12 @@ static void Delay(uint32_t d) {
 }
 
 int test_arp_send_many() {
-    enc_init(enc);
-    enc_enable(enc);
-
     uint8_t expected_pktcnt = 20;
 
     for (unsigned int i = 0; i < expected_pktcnt; i++) {
         Delay(10);
         enc_write_frame(enc, arp, sizeof(arp));
+        enc_read_frame(enc);
     }
 
     uint8_t pktcnt = ENC28J60_get_packet_count(&ENC28J60);
