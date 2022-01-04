@@ -2,9 +2,10 @@
 #define _DMA_H_
 
 #include <stdint.h>
+#include "common.h"
 
 #define DMACHCTL_DSTINC_BYTE(x) (x & ~0xC0000000)
-#define DMACHCTL_DSTINC_HALFWORD(x) (DMACHCTL_DSTINC_BYTE(x) | 0x40000000))
+#define DMACHCTL_DSTINC_HALFWORD(x) (DMACHCTL_DSTINC_BYTE(x) | 0x40000000)
 #define DMACHCTL_DSTINC_WORD(x) (DMACHCTL_DSTINC_BYTE(x) | 0x80000000)
 #define DMACHCTL_DSTINC_NOINC(x) (DMACHCTL_DSTINC_BYTE(x) | 0xC0000000)
 
@@ -39,13 +40,13 @@
 #define DMACHCTL_NXTUSEBURST_DISABLE(x) (x & ~8)
 
 #define DMACHCTL_XFERMODE_STOP(x) (x & 7)
-#define DMACHCTL_XFERMODE_BASIC (DMACHCTL_XFERMODE_STOP(x) | 1)
-#define DMACHCTL_XFERMODE_AUTO (DMACHCTL_XFERMODE_STOP(x) | 2)
-#define DMACHCTL_XFERMODE_PINGPONG (DMACHCTL_XFERMODE_STOP(x) | 3)
-#define DMACHCTL_XFERMODE_MEMSCATGAT (DMACHCTL_XFERMODE_STOP(x) | 4)
-#define DMACHCTL_XFERMODE_ALTSCATGAT (DMACHCTL_XFERMODE_STOP(x) | 5)
-#define DMACHCTL_XFERMODE_PERIPHSCATGAT (DMACHCTL_XFERMODE_STOP(x) | 6)
-#define DMACHCTL_XFERMODE_ALTPERIPHSCATGAT (DMACHCTL_XFERMODE_STOP(x) | 7)
+#define DMACHCTL_XFERMODE_BASIC(x) (DMACHCTL_XFERMODE_STOP(x) | 1)
+#define DMACHCTL_XFERMODE_AUTO(x) (DMACHCTL_XFERMODE_STOP(x) | 2)
+#define DMACHCTL_XFERMODE_PINGPONG(x) (DMACHCTL_XFERMODE_STOP(x) | 3)
+#define DMACHCTL_XFERMODE_MEMSCATGAT(x) (DMACHCTL_XFERMODE_STOP(x) | 4)
+#define DMACHCTL_XFERMODE_ALTSCATGAT(x) (DMACHCTL_XFERMODE_STOP(x) | 5)
+#define DMACHCTL_XFERMODE_PERIPHSCATGAT(x) (DMACHCTL_XFERMODE_STOP(x) | 6)
+#define DMACHCTL_XFERMODE_ALTPERIPHSCATGAT(x) (DMACHCTL_XFERMODE_STOP(x) | 7)
 
 struct DMA {
     volatile uint32_t *DMACFG;
@@ -71,8 +72,8 @@ struct DMA {
 };
 
 struct DMA_CONTROL_STRUCTURE_T {
-    uint32_t srcendptr;
-    uint32_t destendptr;
+    uint32_t *srcendptr;
+    uint32_t *destendptr;
     uint32_t ctrlword;
 };
 
@@ -125,6 +126,9 @@ void enable_DMACHn(enum DMA_CHANNEL ch);
 void disable_DMACHn(enum DMA_CHANNEL ch);
 void set_DMACHn_source_end(enum DMA_CHANNEL ch, uint32_t *srcendptr);
 void set_DMACHn_dest_end(enum DMA_CHANNEL ch, uint32_t *destendptr);
-void set_DMACHn_control_word(enum DMA_CHANNEL ch, uint32_t cw);
-
+void set_DMACHn_control_word(enum DMA_CHANNEL ch, enum DMACHCTL_ADDRESS_INC dstinc,
+                                enum DMACHCTL_DATA_SIZE dstsize, enum DMACHCTL_ADDRESS_INC srcinc,
+                                enum DMACHCTL_DATA_SIZE srcsize, enum DMACHCTL_ARB_SIZE arbsize,
+                                uint16_t transfer_size, enum DMACHCTL_NXTUSEBURSTMODE burst_mode,
+                                enum DMACHCTL_TRANSFER_MODE transfer_mode);
 #endif /* _DMA_H_ */
