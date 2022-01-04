@@ -36,9 +36,8 @@ void set_RCGCSSI(enum SSI_MODULE module, uint8_t value) {
     delay();
 }
 
-void set_RCGCDMA(enum SSI_MODULE module, uint8_t value) {
-    SYSCTL_RCGCSSI_R = (SYSCTL_RCGCSSI_R & ~(1 << module)) |
-                            (value << module);
+void set_RCGCDMA(void) {
+    SYSCTL_RCGCDMA_R |= 1;
     delay();
 }
 
