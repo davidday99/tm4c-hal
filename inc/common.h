@@ -28,6 +28,41 @@ enum SSI_MODULE {
     SSI3,
 };
 
+enum DMA_CHANNEL {
+    DMACH0,
+    DMACH1,
+    DMACH2,
+    DMACH3,
+    DMACH4,
+    DMACH5,
+    DMACH6,
+    DMACH7,
+    DMACH8,
+    DMACH9,
+    DMACH10,
+    DMACH11,
+    DMACH12,
+    DMACH13,
+    DMACH14,
+    DMACH15,
+    DMACH16,
+    DMACH17,
+    DMACH18,
+    DMACH19,
+    DMACH20,
+    DMACH21,
+    DMACH22,
+    DMACH23,
+    DMACH24,
+    DMACH25,
+    DMACH26,
+    DMACH27,
+    DMACH28,
+    DMACH29,
+    DMACH30,
+    DMACH31
+};
+
 enum DMACHCTL_ADDRESS_INC {
     INC_BYTE,
     INC_HALFWORD,
