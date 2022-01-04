@@ -39,7 +39,7 @@
 #define DMACHCTL_NXTUSEBURST_ENABLE(x) (x | 8)
 #define DMACHCTL_NXTUSEBURST_DISABLE(x) (x & ~8)
 
-#define DMACHCTL_XFERMODE_STOP(x) (x & 7)
+#define DMACHCTL_XFERMODE_STOP(x) (x & ~7)
 #define DMACHCTL_XFERMODE_BASIC(x) (DMACHCTL_XFERMODE_STOP(x) | 1)
 #define DMACHCTL_XFERMODE_AUTO(x) (DMACHCTL_XFERMODE_STOP(x) | 2)
 #define DMACHCTL_XFERMODE_PINGPONG(x) (DMACHCTL_XFERMODE_STOP(x) | 3)
@@ -49,6 +49,7 @@
 #define DMACHCTL_XFERMODE_ALTPERIPHSCATGAT(x) (DMACHCTL_XFERMODE_STOP(x) | 7)
 
 struct DMA {
+    volatile uint32_t *DMASTAT;
     volatile uint32_t *DMACFG;
     volatile uint32_t *DMACTLBASE;
     volatile uint32_t *DMAALTBASE;
@@ -72,44 +73,10 @@ struct DMA {
 };
 
 struct DMA_CONTROL_STRUCTURE_T {
-    uint32_t *srcendptr;
-    uint32_t *destendptr;
+    uint8_t *srcendptr;
+    uint8_t *destendptr;
     uint32_t ctrlword;
-};
-
-enum DMA_CHANNEL {
-    DMACH0,
-    DMACH1,
-    DMACH2,
-    DMACH3,
-    DMACH4,
-    DMACH5,
-    DMACH6,
-    DMACH7,
-    DMACH8,
-    DMACH9,
-    DMACH10,
-    DMACH11,
-    DMACH12,
-    DMACH13,
-    DMACH14,
-    DMACH15,
-    DMACH16,
-    DMACH17,
-    DMACH18,
-    DMACH19,
-    DMACH20,
-    DMACH21,
-    DMACH22,
-    DMACH23,
-    DMACH24,
-    DMACH25,
-    DMACH26,
-    DMACH27,
-    DMACH28,
-    DMACH29,
-    DMACH30,
-    DMACH31
+    uint32_t unused;
 };
 
 #define DMA_NUMBER_OF_CHANNELS 32
@@ -124,8 +91,11 @@ void enable_DMACHn_requests(enum DMA_CHANNEL ch);
 void disable_DMACHn_requests(enum DMA_CHANNEL ch);
 void enable_DMACHn(enum DMA_CHANNEL ch);
 void disable_DMACHn(enum DMA_CHANNEL ch);
-void set_DMACHn_source_end(enum DMA_CHANNEL ch, uint32_t *srcendptr);
-void set_DMACHn_dest_end(enum DMA_CHANNEL ch, uint32_t *destendptr);
+void issue_DMACHn_software_request(enum DMA_CHANNEL ch);
+uint32_t get_DMA_status(void);
+void set_DMACHn_src_end(enum DMA_CHANNEL ch, uint8_t *srcendptr);
+void set_DMACHn_dest_end(enum DMA_CHANNEL ch, uint8_t *destendptr);
+void set_DMACHn_channel_source(enum DMA_CHANNEL ch, uint8_t src);
 void set_DMACHn_control_word(enum DMA_CHANNEL ch, enum DMACHCTL_ADDRESS_INC dstinc,
                                 enum DMACHCTL_DATA_SIZE dstsize, enum DMACHCTL_ADDRESS_INC srcinc,
                                 enum DMACHCTL_DATA_SIZE srcsize, enum DMACHCTL_ARB_SIZE arbsize,

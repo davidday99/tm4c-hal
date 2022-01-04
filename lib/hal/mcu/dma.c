@@ -3,6 +3,7 @@
 #include "tm4c123gh6pm.h"
 
 struct DMA DMA = {
+    &UDMA_STAT_R,
     &UDMA_CFG_R,
     &UDMA_CTLBASE_R,
     &UDMA_ALTBASE_R,
@@ -37,7 +38,7 @@ static void set_control_word_xfermode(enum DMACHCTL_TRANSFER_MODE mode, uint32_t
 struct DMA_CONTROL_STRUCTURE_T CS[2*DMA_NUMBER_OF_CHANNELS] __attribute__ ((aligned (1024)));
 
 void init_DMACHn(enum DMA_CHANNEL ch, uint8_t priority) {
-    *(DMA.DMACFG) |=  1 << ch;
+    *(DMA.DMACFG) |=  1;
     *(DMA.DMACTLBASE) = (uint32_t) CS;
 
     set_DMACHn_priority(ch, priority);
@@ -85,15 +86,23 @@ void disable_DMACHn(enum DMA_CHANNEL ch) {
     *(DMA.DMAENACLR) |= 1 << ch;
 }
 
-void set_DMACHn_source_end(enum DMA_CHANNEL ch, uint32_t *srcendptr) {
+void issue_DMACHn_software_request(enum DMA_CHANNEL ch) {
+    *(DMA.DMASWREQ) |= 1 << ch;
+}
+
+uint32_t get_DMA_status(void) {
+    return *(DMA.DMASTAT);
+}
+
+void set_DMACHn_src_end(enum DMA_CHANNEL ch, uint8_t *srcendptr) {
     CS[ch].srcendptr = srcendptr;
 }
 
-void set_DMACHn_dest_end(enum DMA_CHANNEL ch, uint32_t *destendptr) {
-    CS[ch].srcendptr = destendptr;
+void set_DMACHn_dest_end(enum DMA_CHANNEL ch, uint8_t *destendptr) {
+    CS[ch].destendptr = destendptr;
 }
 
-void set_DMACHn_map(enum DMA_CHANNEL ch, uint8_t src) {
+void set_DMACHn_channel_source(enum DMA_CHANNEL ch, uint8_t src) {
     if (ch <= 7)
         *(DMA.DMACHMAP0) = (*(DMA.DMACHMAP0) & ~(0xF << ch)) | (src << ch);
     else if (ch <= 15)
@@ -273,6 +282,8 @@ static void set_control_word_xfermode(enum DMACHCTL_TRANSFER_MODE mode, uint32_t
             break;
         case TRANSFER_MODE_ALTPERIPHSCATGAT:
             *cw = DMACHCTL_XFERMODE_ALTPERIPHSCATGAT(*cw);
+            break;
+        default:
             break;
     }
 }
