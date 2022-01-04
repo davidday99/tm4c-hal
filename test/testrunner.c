@@ -15,10 +15,12 @@ extern void DisableInterrupts();
 extern void StartCritical();
 extern void EndCritical();
 
+int test_dma_mem();
 int test_arp_send_many();
 int test_rx_udp_packet();
 
 int (*test_cases[])(void) = {
+    test_dma_mem,
     test_arp_send_many,
     test_rx_udp_packet
 };
