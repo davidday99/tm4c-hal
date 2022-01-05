@@ -71,11 +71,11 @@ void clear_DMA_bus_error_status(void) {
 }
 
 void enable_DMACHn_requests(enum DMA_CHANNEL ch) {
-    *(DMA.DMAREQMASKSET) |= 1 << ch;
+    *(DMA.DMAREQMASKCLR) |= 1 << ch;
 }
 
 void disable_DMACHn_requests(enum DMA_CHANNEL ch) {
-    *(DMA.DMAREQMASKCLR) |= 1 << ch;
+    *(DMA.DMAREQMASKSET) |= 1 << ch;
 }
 
 void enable_DMACHn(enum DMA_CHANNEL ch) {
@@ -106,11 +106,11 @@ void set_DMACHn_channel_source(enum DMA_CHANNEL ch, uint8_t src) {
     if (ch <= 7)
         *(DMA.DMACHMAP0) = (*(DMA.DMACHMAP0) & ~(0xF << ch)) | (src << ch);
     else if (ch <= 15)
-        *(DMA.DMACHMAP1) = (*(DMA.DMACHMAP1) & ~(0xF << (ch - 8))) | (src << (ch - 8));
+        *(DMA.DMACHMAP1) = (*(DMA.DMACHMAP1) & ~(0xF << 4*(ch - 8))) | (src << 4*(ch - 8));
     else if (ch <= 23)
-        *(DMA.DMACHMAP2) = (*(DMA.DMACHMAP2) & ~(0xF << (ch - 16))) | (src << (ch - 16));
+        *(DMA.DMACHMAP2) = (*(DMA.DMACHMAP2) & ~(0xF << 4*(ch - 16))) | (src << 4*(ch - 16));
     else if (ch <= 31)
-        *(DMA.DMACHMAP3) = (*(DMA.DMACHMAP3) & ~(0xF << (ch - 24))) | (src << (ch - 24));
+        *(DMA.DMACHMAP3) = (*(DMA.DMACHMAP3) & ~(0xF << 4*(ch - 24))) | (src << 4*(ch - 24));
 }
 
 void set_DMACHn_control_word(enum DMA_CHANNEL ch, enum DMACHCTL_ADDRESS_INC dstinc,
