@@ -16,11 +16,15 @@ extern void StartCritical();
 extern void EndCritical();
 
 int test_dma_mem();
+int test_dma_ssi_rx();
+int test_dma_ssi_tx();
 int test_arp_send_many();
 int test_rx_udp_packet();
 
 int (*test_cases[])(void) = {
     test_dma_mem,
+    test_dma_ssi_rx,
+    test_dma_ssi_tx,
     test_arp_send_many,
     test_rx_udp_packet
 };

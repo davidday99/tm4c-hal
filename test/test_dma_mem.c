@@ -11,7 +11,7 @@ int test_dma_mem() {
     for (int i = 0; i < 100; i++)
         src[i] = i;
         
-    uint8_t dest[100];
+    uint8_t dest[100] = {0};
 
     struct DMA_MODULE _dma;
     struct DMA_MODULE *dma = &_dma;
