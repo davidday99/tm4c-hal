@@ -16,6 +16,11 @@ int32_t memcmp(void *dest, const void *src, uint32_t n) {
     return 0;
 }
 
+void memset(void *dest, uint8_t val, uint32_t n) {
+    for (uint32_t i = 0; i < n; i++)
+        ((uint8_t *) dest)[i] = val;
+}
+
 void strcpy(char *dest, char *src) {
     while ((*dest++ = *src++) != '\0')
         ;

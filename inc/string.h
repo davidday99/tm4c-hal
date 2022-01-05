@@ -5,6 +5,7 @@
 
 void memcpy(void *dest, const void *src, uint32_t n);
 int32_t memcmp(void *dest, const void *src, uint32_t n);
+void memset(void *dest, uint8_t val, uint32_t n);
 void strcpy(char *dest, char *src);
 
 #endif /* _STRING_H_ */
