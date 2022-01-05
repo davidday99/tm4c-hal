@@ -11,7 +11,9 @@ struct DMA_MODULE {
 void init_dma(struct DMA_MODULE *dma, enum DMA_CHANNEL ch, uint8_t source);
 void start_dma_transfer_mem(struct DMA_MODULE *dma, uint8_t *srcendptr, 
                         uint8_t *destendptr, uint16_t size);
-void start_dma_transfer_peripheral(struct DMA_MODULE *dma, uint8_t *srcendptr, 
+void start_dma_transfer_peripheral_tx(struct DMA_MODULE *dma, uint8_t *srcendptr, 
+                        uint8_t *destendptr, uint16_t size);
+void start_dma_transfer_peripheral_rx(struct DMA_MODULE *dma, uint8_t *srcendptr, 
                         uint8_t *destendptr, uint16_t size);
 uint8_t dma_busy(void);
 

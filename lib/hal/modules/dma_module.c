@@ -21,13 +21,24 @@ void start_dma_transfer_mem(struct DMA_MODULE *dma, uint8_t *srcendptr,
     issue_DMACHn_software_request(dma->channel);
 }
 
-void start_dma_transfer_peripheral(struct DMA_MODULE *dma, uint8_t *srcendptr, 
+void start_dma_transfer_peripheral_tx(struct DMA_MODULE *dma, uint8_t *srcendptr, 
                         uint8_t *destendptr, uint16_t size) {
     set_DMACHn_src_end(dma->channel, srcendptr);
     set_DMACHn_dest_end(dma->channel, destendptr);
     set_DMACHn_control_word(dma->channel, INC_NONE, SIZE_BYTE,
                             INC_BYTE, SIZE_BYTE, ARBSIZE_4,
-                            size, BURSTMODE_EN, TRANSFER_MODE_BASIC);
+                            size, BURSTMODE_DIS, TRANSFER_MODE_BASIC);
+    enable_DMACHn(dma->channel);
+}
+
+void start_dma_transfer_peripheral_rx(struct DMA_MODULE *dma, uint8_t *srcendptr, 
+                        uint8_t *destendptr, uint16_t size) {
+    set_DMACHn_src_end(dma->channel, srcendptr);
+    set_DMACHn_dest_end(dma->channel, destendptr);
+    set_DMACHn_control_word(dma->channel, INC_BYTE, SIZE_BYTE,
+                            INC_NONE, SIZE_BYTE, ARBSIZE_4,
+                            size, BURSTMODE_DIS, TRANSFER_MODE_BASIC);
+    enable_DMACHn(dma->channel);
 }
 
 uint8_t dma_busy(void) {
