@@ -75,6 +75,22 @@ void disable_ssi(struct SSI *ssi) {
     set_SSICR1SSE_low(ssi->module);
 }
 
+void enable_ssi_tx_dma(struct SSI *ssi) {
+    set_SSIDMACTL_tx(ssi->module, 1);
+}
+
+void disable_ssi_tx_dma(struct SSI *ssi) {
+    set_SSIDMACTL_tx(ssi->module, 0);
+}
+
+void enable_ssi_rx_dma(struct SSI *ssi) {
+    set_SSIDMACTL_rx(ssi->module, 1);
+}
+
+void disable_ssi_rx_dma(struct SSI *ssi) {
+    set_SSIDMACTL_rx(ssi->module, 0);
+}
+
 void read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size, uint8_t nop) {
     read_n_bytes_from_SSIDR(ssi->module, data, size, nop);
 }
@@ -86,6 +102,14 @@ void write_ssi(struct SSI *ssi, uint8_t *data, uint32_t size) {
 void dump_rx_fifo(struct SSI *ssi) {
     while (!SSI_rx_empty(ssi->module))
         read_SSIDR(ssi->module);
+}
+
+void enable_ssi_loopback(struct SSI *ssi) {
+    set_SSICR1_loopback(ssi->module, 1);
+}
+
+void disable_ssi_loopback(struct SSI *ssi) {
+    set_SSICR1_loopback(ssi->module, 0);
 }
 
 static void init_ssi_afsel(struct SSI *ssi) {

@@ -50,6 +50,10 @@ void init_SSICR1(enum SSI_MODULE module, uint8_t mode) {
     *(SSI[module].SSICR1) |= mode;
 }
 
+void set_SSICR1_loopback(enum SSI_MODULE module, uint8_t lpbk) {
+    *(SSI[module].SSICR1) = (*(SSI[module].SSICR1) & ~1) | lpbk;
+}
+
 void set_SSICR1SSE_high(enum SSI_MODULE module) {
     *(SSI[module].SSICR1) |= 2;
 }
@@ -129,4 +133,14 @@ uint8_t SSI_rx_full(enum SSI_MODULE module) {
 
 uint8_t SSI_rx_empty(enum SSI_MODULE module) {
     return (*(SSI[module].SSISR) & SSI_SR_RNE) == 0;
+}
+
+void set_SSIDMACTL_tx(enum SSI_MODULE module, uint8_t txdma_en) {
+    *(SSI[module].SSIDMACTL) &= ~2;
+    *(SSI[module].SSIDMACTL) |= txdma_en << 1;
+}
+
+void set_SSIDMACTL_rx(enum SSI_MODULE module, uint8_t rxdma_en) {
+    *(SSI[module].SSIDMACTL) &= ~1;
+    *(SSI[module].SSIDMACTL) |= rxdma_en;
 }
