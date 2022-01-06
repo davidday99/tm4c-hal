@@ -38,8 +38,6 @@ int test_dma_ssi_tx_rx() {
     init_dma(dmarx, DMACH12, 2);
     init_dma(dmatx, DMACH13, 2);
 
-    enable_DMACHn_requests(dmatx->channel);
-    enable_DMACHn_requests(dmarx->channel);
 
     SSI2_IM_R |= 0x80;  // mask tx fifo interrupt
 

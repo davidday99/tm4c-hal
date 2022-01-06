@@ -34,8 +34,6 @@ int test_dma_ssi_rx() {
 
     init_dma(dma, DMACH12, 2);
 
-    enable_DMACHn_requests(dma->channel);
-
     SSI2_IM_R |= 0xC0;  // TODO: create functions for enabling/disabling peripheral interrupts
 
     NVIC_EN1_R |= 1 << 25;  // TODO: create functions for enabling/disabling interrupts in NVIC

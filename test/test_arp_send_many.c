@@ -59,6 +59,9 @@ static void Delay(uint32_t d) {
 int test_arp_send_many() {
     uint8_t expected_pktcnt = 20;
 
+    enc_init(enc);
+    enc_enable(enc);
+
     for (unsigned int i = 0; i < expected_pktcnt; i++) {
         Delay(10);
         enc_write_frame(enc, arp, sizeof(arp));

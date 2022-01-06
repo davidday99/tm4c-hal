@@ -7,6 +7,8 @@
 #include "ethernet.h"
 #include "socket.h"
 #include "string.h"
+#include "enc28j60.h"
+#include "tm4c123gh6pm.h"
 
 extern ENC *enc;
 
@@ -16,7 +18,7 @@ static void Delay(uint32_t d) {
         delay--;
 }
 
-uint8_t ipv4_packet[] = {
+uint8_t ipv4_packet3[] = {
     0xDE,
     0xAD,
     0xBE,
@@ -63,31 +65,34 @@ uint8_t ipv4_packet[] = {
     0xEF  // 2 bytes of data
 };
 
-int test_rx_udp_packet() {
+int test_dma_rx_udp_packet() {
     int success = 1;
 
     enc_init(enc);
     enc_enable(enc);
 
+    Delay(10);
+
     struct socket *s = socket_init(SOCKTYPE_UDP);
     struct socket_addr sockaddr = {ipv4_to_int("192.168.0.111"), 80};
     socket_bind(s, &sockaddr);
 
-    Delay(10);
-
-    enc_write_frame(enc, ipv4_packet, sizeof(ipv4_packet));
-    enc_read_frame(enc);
-    ipv4_deliver((struct ipv4hdr *) (enc_rx_buffer + ENET_DATA_OFFSET));
+    enc_write_frame(enc, ipv4_packet3, sizeof(ipv4_packet3));
+    ENC28J60_read_frame_dma(&ENC28J60);
 
     uint8_t data[2]; 
     struct socket_addr clientaddr;
+
+    uint16_t i = 0;
+    while (s->sockbuf.rdptr == s->sockbuf.wrptr && i < UINT16_MAX) {
+        i++;
+    }
+
     socket_read(s, &clientaddr, data, 2);
 
     success &= clientaddr.ip == 0xC0A8006F;
     success &= clientaddr.port == 0xC0C1;
     success &= memcmp(data, (uint8_t[]) {0xBE, 0xEF}, 2) == 0;
-
-    socket_close(s);
 
     return success;
 }

@@ -34,8 +34,6 @@ int test_dma_ssi_tx() {
 
     init_dma(dma, DMACH13, 2);
 
-    enable_DMACHn_requests(dma->channel);
-
     SSI2_IM_R |= 0xC0;
 
     NVIC_EN1_R |= 1 << 25;
