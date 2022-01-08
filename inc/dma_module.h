@@ -15,6 +15,7 @@ void start_dma_transfer_peripheral_tx(struct DMA_MODULE *dma, uint8_t *srcendptr
                         uint8_t *destendptr, uint16_t size);
 void start_dma_transfer_peripheral_rx(struct DMA_MODULE *dma, uint8_t *srcendptr, 
                         uint8_t *destendptr, uint16_t size);
+uint16_t remaining_dma_transfer_count(struct DMA_MODULE *dma);
 uint8_t dma_busy(void);
 
 #endif /* _DMA_H_ */

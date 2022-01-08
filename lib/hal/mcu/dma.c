@@ -94,6 +94,10 @@ uint32_t get_DMA_status(void) {
     return *(DMA.DMASTAT);
 }
 
+struct DMA_CONTROL_STRUCTURE_T *get_DMACHn_control_structure(enum DMA_CHANNEL ch) {
+    return &CS[ch];
+}
+
 void set_DMACHn_src_end(enum DMA_CHANNEL ch, uint8_t *srcendptr) {
     CS[ch].srcendptr = srcendptr;
 }

@@ -93,6 +93,7 @@ void enable_DMACHn(enum DMA_CHANNEL ch);
 void disable_DMACHn(enum DMA_CHANNEL ch);
 void issue_DMACHn_software_request(enum DMA_CHANNEL ch);
 uint32_t get_DMA_status(void);
+struct DMA_CONTROL_STRUCTURE_T *get_DMACHn_control_structure(enum DMA_CHANNEL ch);
 void set_DMACHn_src_end(enum DMA_CHANNEL ch, uint8_t *srcendptr);
 void set_DMACHn_dest_end(enum DMA_CHANNEL ch, uint8_t *destendptr);
 void set_DMACHn_channel_source(enum DMA_CHANNEL ch, uint8_t src);
