@@ -2,6 +2,7 @@
 #include "enc28j60.h"
 #include "ssi_module.h"
 #include "gpio_module.h"
+#include "dma_module.h"
 #include "tm4c123gh6pm.h"
 #include "lcd.h"
 
@@ -115,12 +116,26 @@
 #define PHIR 0x13
 #define PHLCON 0x14
 
+#define ENC28J60_MAX_FRAME_LEN 1518
+
+static struct DMA_MODULE _dmatx;
+static struct DMA_MODULE _dmarx;
 
 struct ENC28J60 ENC28J60 = {
     &SSI_1,
+    &_dmatx,
+    &_dmarx,
     &PORTB_PIN0,
-    &PORTB_PIN1
+    &PORTB_PIN1,
+    0,
+    0
 };
+
+static uint8_t enc28j60_rx_buffer[ENC28J60_MAX_FRAME_LEN];
+static uint8_t enc28j60_tx_buffer[ENC28J60_MAX_FRAME_LEN];
+
+uint8_t ENC28J60_DMA_IN_PROGRESS;
+uint8_t nf[2];
 
 extern LCD lcd;
 
@@ -142,6 +157,9 @@ static void init_phy_registers(struct ENC28J60 *enc28j60);
 static uint8_t init_success(struct ENC28J60 *enc28j60);
 
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
+    enc28j60->rx_buf = enc28j60_rx_buffer;
+    enc28j60->tx_buf = enc28j60_tx_buffer;
+
     init_peripherals(enc28j60);
     system_reset(enc28j60);
     init_buffers(enc28j60);
@@ -166,9 +184,19 @@ uint8_t ENC28J60_enable_receive(struct ENC28J60 *enc28j60) {
 }
 
 uint8_t ENC28J60_disable_receive(struct ENC28J60 *enc28j60) {
-    bit_field_clear(enc28j60, ECON1, ~4);
+    bit_field_clear(enc28j60, ECON1, 4);
 
     return (read_control_register(enc28j60, ECON1, 1) & 4) == 0; 
+}
+
+void ENC28J60_enable_dma(struct ENC28J60 *enc28j60) {
+    enable_ssi_tx_dma(enc28j60->ssi);
+    enable_ssi_rx_dma(enc28j60->ssi);
+}
+
+void ENC28J60_disable_dma(struct ENC28J60 *enc28j60) {
+    disable_ssi_tx_dma(enc28j60->ssi);
+    disable_ssi_rx_dma(enc28j60->ssi);
 }
 
 uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data) {
@@ -236,6 +264,101 @@ void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t siz
     bit_field_set(enc28j60, ECON1, bank);
 }
 
+uint16_t ENC28J60_read_frame_dma(struct ENC28J60 *enc28j60) {
+    ENC28J60_disable_dma(enc28j60);
+
+    uint16_t len;
+    uint16_t next_frame_val;
+    uint16_t rdptr;
+    uint8_t next_frame[2];
+    uint8_t rsv[4];
+    static uint16_t prevnf;
+
+    uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
+    bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
+    bit_field_set(enc28j60, ECON1, 0);
+
+    if (rdptr != prevnf) {
+        write_control_register(enc28j60, ERDPTL, prevnf & 0xFF);
+        write_control_register(enc28j60, ERDPTH, (prevnf & 0xFF00) >> 8);
+    }
+
+    read_buffer_memory(enc28j60, next_frame, 2);
+    read_buffer_memory(enc28j60, rsv, 4);
+    
+    len = (rsv[0] & 0xFF) | (rsv[1] << 8);
+    next_frame_val = (next_frame[0] & 0xFF) | (next_frame[1] << 8);
+    prevnf = next_frame_val;
+    
+    if (next_frame_val == 0) {
+        next_frame_val = 0x17ff;
+    } else {
+        next_frame_val -= 1;
+    }
+
+    // if (len == 426) {
+    //     ENC28J60_disable_receive(enc28j60);
+    //     static int x;
+    //     x++;
+    // }
+
+    
+
+    nf[0] = next_frame_val & 0xFF;
+    nf[1] = (next_frame_val & 0xFF00) >> 8;
+
+    // write_control_register(enc28j60, ERXRDPTL, next_frame[0]);
+    // write_control_register(enc28j60, ERXRDPTH, next_frame[1]);
+    // write_control_register(enc28j60, ERDPTL, next_frame[0]);
+    // write_control_register(enc28j60, ERDPTH, next_frame[1]);
+
+    ENC28J60_decrement_packet_count(enc28j60);
+
+    lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
+    lcd_write(&lcd, "t: %d\n", len);
+
+    // return len;
+    
+    if (len > ENC28J60_MAX_FRAME_LEN) {
+        ENC28J60_disable_receive(enc28j60);
+        static int x;
+        x++;
+        write_control_register(enc28j60, ERXRDPTL, next_frame[0]);
+        write_control_register(enc28j60, ERXRDPTH, next_frame[1]);
+        write_control_register(enc28j60, ERDPTL, next_frame[0]);
+        write_control_register(enc28j60, ERDPTH, next_frame[1]);
+        return len;    
+    }
+
+    uint8_t read_buf_cmd = RBM_OPCODE | RBM_ARG0;
+    enc28j60->tx_buf[0] = read_buf_cmd;
+    for (uint16_t i = 1; i < len; i++) {
+        enc28j60->tx_buf[i] = NOP;
+
+    }
+
+    bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
+    bit_field_set(enc28j60, ECON1, bank);
+
+    SSI1_IM_R |= 0x40;  // mask tx fifo interrupt
+    NVIC_EN1_R |= 1 << 2;
+
+    ENC28J60_DMA_IN_PROGRESS = 1;
+
+    ENC28J60_enable_dma(enc28j60);
+        
+    set_gpio_pin_low(enc28j60->cs);
+    start_dma_transfer_peripheral_rx(enc28j60->dmarx, (uint8_t *) &SSI1_DR_R, enc28j60->rx_buf + len, len + 1);
+    start_dma_transfer_peripheral_tx(enc28j60->dmatx, enc28j60->tx_buf + len, (uint8_t *) &SSI1_DR_R, len + 1);
+    
+    return len;
+}
+
+void ENC28J60_advance_rdptr(struct ENC28J60 *enc28j60) {
+    write_control_register(enc28j60, ERXRDPTL, nf[0]);
+    write_control_register(enc28j60, ERXRDPTH, nf[1]);
+}
+
 void ENC28J60_get_tx_status_vec(struct ENC28J60 *enc28j60, uint8_t *tsv) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 0
@@ -270,6 +393,14 @@ uint8_t ENC28J60_get_packet_count(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
     return count;
+}
+
+void ENC28J60_disable_interrupts(struct ENC28J60 *enc28j60) {
+    bit_field_clear(enc28j60, EIE, 0x80);
+}
+
+void ENC28J60_enable_interrupts(struct ENC28J60 *enc28j60) {
+    bit_field_set(enc28j60, EIE, 0x80);
 }
 
 void ENC28J60_decrement_packet_count(struct ENC28J60 *enc28j60) {
@@ -357,8 +488,6 @@ static void write_phy_register(struct ENC28J60 *enc28j60, uint8_t phy_addr, int1
 
 static void read_buffer_memory(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t bytes) {
     uint8_t cmd = RBM_OPCODE | RBM_ARG0;
-    if (!ssi_rx_empty(enc28j60->ssi))
-        lcd_write(&lcd, "RX NOT EMPTY!\n");
     set_gpio_pin_low(enc28j60->cs);
     write_ssi(enc28j60->ssi, &cmd, 1);
     while (ssi_is_busy(enc28j60->ssi))
@@ -417,6 +546,9 @@ static void init_peripherals(struct ENC28J60 *enc28j60) {
     init_ssi_mode(enc28j60->ssi, 0, 0, 0, 0, 8);
     enable_ssi(enc28j60->ssi);
 
+    init_dma(enc28j60->dmatx, DMACH11, 1);
+    init_dma(enc28j60->dmarx, DMACH10, 1);
+
     init_gpio_port_clock(enc28j60->cs);
     disable_gpio_pin_alternate_function(enc28j60->cs);
     init_gpio_pin_as_output(enc28j60->cs);
@@ -462,7 +594,8 @@ static void init_receive_filters(struct ENC28J60 *enc28j60) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 1
     bit_field_set(enc28j60, ECON1, 1);
-    write_control_register(enc28j60, ERXFCON, 0);  // enable promiscuous mode (receive all packets)
+    // write_control_register(enc28j60, ERXFCON, 0);  // enable promiscuous mode (receive all packets)
+    write_control_register(enc28j60, ERXFCON, 0); 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
 }
@@ -493,12 +626,12 @@ static void init_mac_registers(struct ENC28J60 *enc28j60) {
     bit_field_set(enc28j60, ECON1, 3);
 
     // init MAC address to A0-CD-DF-01-23-45, 0 in LSB if first byte indicates unicast address
-    write_control_register(enc28j60, MAADR1, 0xA0);
-    write_control_register(enc28j60, MAADR2, 0xCD);
-    write_control_register(enc28j60, MAADR3, 0xEF);
-    write_control_register(enc28j60, MAADR4, 0x01);
-    write_control_register(enc28j60, MAADR5, 0x23);
-    write_control_register(enc28j60, MAADR6, 0x45);
+    write_control_register(enc28j60, MAADR1, 0xB4);
+    write_control_register(enc28j60, MAADR2, 0x2E);
+    write_control_register(enc28j60, MAADR3, 0x99);
+    write_control_register(enc28j60, MAADR4, 0xEC);
+    write_control_register(enc28j60, MAADR5, 0x02);
+    write_control_register(enc28j60, MAADR6, 0xC5);
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
@@ -543,12 +676,12 @@ static uint8_t init_success(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 3
     bit_field_set(enc28j60, ECON1, 3);   
 
-    success &= read_control_register(enc28j60, MAADR1, 0) == 0xA0;
-    success &= read_control_register(enc28j60, MAADR2, 0) == 0xCD;
-    success &= read_control_register(enc28j60, MAADR3, 0) == 0xEF;
-    success &= read_control_register(enc28j60, MAADR4, 0) == 0x01;
-    success &= read_control_register(enc28j60, MAADR5, 0) == 0x23;
-    success &= read_control_register(enc28j60, MAADR6, 0) == 0x45;
+    success &= read_control_register(enc28j60, MAADR1, 0) == 0xB4;
+    success &= read_control_register(enc28j60, MAADR2, 0) == 0x2E;
+    success &= read_control_register(enc28j60, MAADR3, 0) == 0x99;
+    success &= read_control_register(enc28j60, MAADR4, 0) == 0xEC;
+    success &= read_control_register(enc28j60, MAADR5, 0) == 0x02;
+    success &= read_control_register(enc28j60, MAADR6, 0) == 0xC5;
 
     success &= read_phy_register(enc28j60, PHCON1) == 0x0100;
 
