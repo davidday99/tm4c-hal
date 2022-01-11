@@ -48,7 +48,7 @@
 #define DMACHCTL_XFERMODE_PERIPHSCATGAT(x) (DMACHCTL_XFERMODE_STOP(x) | 6)
 #define DMACHCTL_XFERMODE_ALTPERIPHSCATGAT(x) (DMACHCTL_XFERMODE_STOP(x) | 7)
 
-struct DMA {
+struct DMA_MODULE {
     volatile uint32_t *DMASTAT;
     volatile uint32_t *DMACFG;
     volatile uint32_t *DMACTLBASE;
@@ -102,4 +102,7 @@ void set_DMACHn_control_word(enum DMA_CHANNEL ch, enum DMACHCTL_ADDRESS_INC dsti
                                 enum DMACHCTL_DATA_SIZE srcsize, enum DMACHCTL_ARB_SIZE arbsize,
                                 uint16_t transfer_size, enum DMACHCTL_NXTUSEBURSTMODE burst_mode,
                                 enum DMACHCTL_TRANSFER_MODE transfer_mode);
+uint8_t get_DMACHn_interrupt_status(enum DMA_CHANNEL ch);
+void clear_DMACHn_interrupt(enum DMA_CHANNEL ch);
+
 #endif /* _DMA_H_ */

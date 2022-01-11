@@ -2,7 +2,7 @@
 #include "common.h"
 #include "tm4c123gh6pm.h"
 
-struct DMA DMA = {
+struct DMA_MODULE DMA = {
     &UDMA_STAT_R,
     &UDMA_CFG_R,
     &UDMA_CTLBASE_R,
@@ -133,6 +133,14 @@ void set_DMACHn_control_word(enum DMA_CHANNEL ch, enum DMACHCTL_ADDRESS_INC dsti
     set_control_word_xfermode(transfer_mode, &cw);
 
     CS[ch].ctrlword = cw;
+}
+
+uint8_t get_DMACHn_interrupt_status(enum DMA_CHANNEL ch) {
+    return (UDMA_CHIS_R & (1 << ch)) != 0;
+}
+
+void clear_DMACHn_interrupt(enum DMA_CHANNEL ch) {
+    UDMA_CHIS_R &= ~(1 << ch);
 }
 
 static void set_control_word_destinc(enum DMACHCTL_ADDRESS_INC inc, uint32_t *cw) {
