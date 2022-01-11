@@ -7,12 +7,13 @@
 
 struct ENC28J60 {
     struct SSI *ssi;
-    struct DMA_MODULE *dmatx;
-    struct DMA_MODULE *dmarx;
+    struct DMA *dmatx;
+    struct DMA *dmarx;
     struct GPIO_PIN *cs;
     struct GPIO_PIN *intr;
     uint8_t *rx_buf;
     uint8_t *tx_buf;
+    uint16_t nf_ptr;
 };
 
 extern struct ENC28J60 ENC28J60;
@@ -20,8 +21,8 @@ extern struct ENC28J60 ENC28J60;
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60);
 uint8_t ENC28J60_enable_receive(struct ENC28J60 *enc28j60);
 uint8_t ENC28J60_disable_receive(struct ENC28J60 *enc28j60);
-uint16_t ENC28J60_read_frame(struct ENC28J60 *enc28j60, uint8_t *data);
-void ENC28J60_write_frame(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t size);
+uint16_t ENC28J60_read_frame_blocking(struct ENC28J60 *enc28j60, uint8_t *data);
+void ENC28J60_write_frame_blocking(struct ENC28J60 *enc28j60, uint8_t *data, uint16_t size);
 uint16_t ENC28J60_read_frame_dma(struct ENC28J60 *enc28j60);
 void ENC28J60_enable_dma(struct ENC28J60 *enc28j60);
 void ENC28J60_disable_dma(struct ENC28J60 *enc28j60);
