@@ -91,6 +91,54 @@ void disable_ssi_rx_dma(struct SSI *ssi) {
     set_SSIDMACTL_rx(ssi->module, 0);
 }
 
+void enable_ssi_interrupts(struct SSI *ssi) {
+    enable_SSI_NVI(ssi->module);
+}
+
+void disable_ssi_interrupts(struct SSI *ssi) {
+    disable_SSI_NVI(ssi->module);
+}
+
+void enable_ssi_tx_interrupt(struct SSI *ssi) {
+    set_SSIIM(ssi->module, 3);
+}
+
+void disable_ssi_tx_interrupt(struct SSI *ssi) {
+    clear_SSIIM(ssi->module, 3);
+}
+
+void enable_ssi_rx_interrupt(struct SSI *ssi) {
+    set_SSIIM(ssi->module, 2);
+}
+
+void disable_ssi_rx_interrupt(struct SSI *ssi) {
+    clear_SSIIM(ssi->module, 2);
+}
+
+void enable_ssi_rx_timeout_interrupt(struct SSI *ssi) {
+    set_SSIIM(ssi->module, 1);
+}
+
+void disable_ssi_rx_timeout_interrupt(struct SSI *ssi) {
+    clear_SSIIM(ssi->module, 1);
+}
+
+void enable_ssi_rx_overrun_interrupt(struct SSI *ssi) {
+    set_SSIIM(ssi->module, 0);
+}
+
+void disable_ssi_rx_overrun_interrupt(struct SSI *ssi) {
+    clear_SSIIM(ssi->module, 0);
+}
+
+void clear_ssi_rx_timeout_interrupt(struct SSI *ssi) {
+    set_SSIICR(ssi->module, 1);
+}
+
+void clear_ssi_rx_overrun_interrupt(struct SSI *ssi) {
+    set_SSIICR(ssi->module, 0);
+}
+
 void read_ssi(struct SSI *ssi, uint8_t *data, uint32_t size, uint8_t nop) {
     read_n_bytes_from_SSIDR(ssi->module, data, size, nop);
 }
