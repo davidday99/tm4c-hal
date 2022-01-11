@@ -81,23 +81,6 @@ void write_SSIDR(enum SSI_MODULE module, uint8_t data) {
     *(SSI[module].SSIDR) = data;
 }
 
-void write_array_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t len) {
-    uint32_t i = 0;
-    while (len-- > 0) {
-        while (SSI_tx_full(module))
-            ;
-        write_SSIDR(module, data[i++]);
-    }
-}
-
-uint32_t read_SSIDR_into_array(enum SSI_MODULE module, uint8_t *data, uint32_t bytes) {
-    uint32_t i = 0;
-    while (i < bytes && !SSI_rx_empty(module)) {
-        data[i++] = read_SSIDR(module);
-    }
-    return i;
-}
-
 void read_n_bytes_from_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t n, uint8_t nop) {
     for (uint32_t i = 0; i < n; i++) {
         *(SSI[module].SSIDR) = nop;
@@ -113,6 +96,66 @@ void write_n_bytes_to_SSIDR(enum SSI_MODULE module, uint8_t *data, uint32_t n) {
             ;
         *(SSI[module].SSIDR) = data[i];
     }
+}
+
+void set_SSIIM(enum SSI_MODULE module, uint8_t val) {
+    *(SSI[module].SSIIM) |= 1 << val;
+}
+
+void clear_SSIIM(enum SSI_MODULE module, uint8_t val) {
+    *(SSI[module].SSIIM) &= ~(1 << val);
+}
+
+void set_SSIICR(enum SSI_MODULE module, uint8_t val) {
+    *(SSI[module].SSIICR) |= 1 << val;
+}
+
+void enable_SSI_NVI(enum SSI_MODULE module) {
+    switch (module) {
+        case SSI0:
+            NVIC_EN0_R |= 1 << 7;
+            break;
+        case SSI1:
+            NVIC_EN1_R |= 1 << 2;
+            break;
+        case SSI2:
+            NVIC_EN1_R |= 1 << 25;
+            break;
+        case SSI3:
+            NVIC_EN1_R |= 1 << 26;
+            break;
+        default:
+            break;
+    }
+}
+
+void disable_SSI_NVI(enum SSI_MODULE module) {
+    switch (module) {
+        case SSI0:
+            NVIC_EN0_R &= ~(1 << 7);
+            break;
+        case SSI1:
+            NVIC_EN1_R &= ~(1 << 2);
+            break;
+        case SSI2:
+            NVIC_EN1_R &= ~(1 << 25);
+            break;
+        case SSI3:
+            NVIC_EN1_R &= ~(1 << 26);
+            break;
+        default:
+            break;
+    }
+}
+
+void set_SSIDMACTL_tx(enum SSI_MODULE module, uint8_t txdma_en) {
+    *(SSI[module].SSIDMACTL) &= ~2;
+    *(SSI[module].SSIDMACTL) |= txdma_en << 1;
+}
+
+void set_SSIDMACTL_rx(enum SSI_MODULE module, uint8_t rxdma_en) {
+    *(SSI[module].SSIDMACTL) &= ~1;
+    *(SSI[module].SSIDMACTL) |= rxdma_en;
 }
 
 uint8_t SSI_bsy(enum SSI_MODULE module) {
@@ -133,14 +176,4 @@ uint8_t SSI_rx_full(enum SSI_MODULE module) {
 
 uint8_t SSI_rx_empty(enum SSI_MODULE module) {
     return (*(SSI[module].SSISR) & SSI_SR_RNE) == 0;
-}
-
-void set_SSIDMACTL_tx(enum SSI_MODULE module, uint8_t txdma_en) {
-    *(SSI[module].SSIDMACTL) &= ~2;
-    *(SSI[module].SSIDMACTL) |= txdma_en << 1;
-}
-
-void set_SSIDMACTL_rx(enum SSI_MODULE module, uint8_t rxdma_en) {
-    *(SSI[module].SSIDMACTL) &= ~1;
-    *(SSI[module].SSIDMACTL) |= rxdma_en;
 }
