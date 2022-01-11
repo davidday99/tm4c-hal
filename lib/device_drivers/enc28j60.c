@@ -219,10 +219,9 @@ uint16_t ENC28J60_read_frame_blocking(struct ENC28J60 *enc28j60, uint8_t *data) 
     read_buffer_memory(enc28j60, next_frame, 2);
     read_buffer_memory(enc28j60, rsv, 4);
 
-    lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
-    
     len = (rsv[0] & 0xFF) | (rsv[1] << 8);
-    lcd_write(&lcd, "len: %d\n", len);
+    // lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
+    // lcd_write(&lcd, "len: %d\n", len);
 
     /* If we ever enter here an error has occurred. */
     if (len > ENC28J60_MAX_FRAME_LEN) {
@@ -309,8 +308,8 @@ uint16_t ENC28J60_read_frame_dma(struct ENC28J60 *enc28j60) {
         return len;
     }
 
-    lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
-    lcd_write(&lcd, "t: %d\n", len);
+    // lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
+    // lcd_write(&lcd, "t: %d\n", len);
 
     uint8_t read_buf_cmd = RBM_OPCODE | RBM_ARG0;
     enc28j60->tx_buf[0] = read_buf_cmd;
