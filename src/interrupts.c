@@ -1,9 +1,16 @@
 #include <stdint.h>
 #include "gpio.h"
+#include "gpio_module.h"
 #include "common.h"
-#include "enc.h"
-#include "ssi.h"
-#include "producer.h"
+#include "tm4c123gh6pm.h"
+#include "dma_module.h"
+#include "enc28j60.h"
+#include "ipv4_in.h"
+#include "lcd.h"
+
+extern uint8_t ENC28J60_DMA_IN_PROGRESS;
+extern LCD lcd;
+extern struct ENC28J60 *enc;
 
 void BusFault_Handler(void) {
     while (1)
@@ -16,23 +23,31 @@ void GPIOPortB_ISR(void) {
     uint8_t pin = get_gpio_port_MIS(PORTB);
     set_gpio_pin_ICR(PORTB, 1);
     set_gpio_pin_IM(PORTB, 1, 0);
-
-    /* if SSI is currently in use by the ethernet controller in the main thread,
-        then put off clearing the flag until a later time. If this happens then
-        the packet count needs to be manually checked to account for any packets
-        that are missed during the time between the last interrupt and the point 
-        at which the controller's interrupt flag is actually cleared.
-    */
-    // if (!SSI_bsy(SSI1))
-    //     enc_clear_interrupt_flag();
-    // else
-    //     event_queue_push(EVENT_ETHERNET_FRAME_WAITING);
-    
+        
     /* Check which pin on PORTB triggered the interrupt. PIN2 is connected to the
         ethernet controller's INT pin.
     */
-    if (pin == 2)
-        producer_queue_push(PRODUCER_ETHERNET_RECEIVE);
+    if (pin == 2) {
+        ENC28J60_disable_interrupts(&ENC28J60);
+        ENC28J60_decrement_packet_count(&ENC28J60);
+        ENC28J60_read_frame_dma(&ENC28J60);
+    }
 
     set_gpio_pin_IM(PORTB, 1, 1);
+}
+
+void SPI1_ISR(void) {
+    if (dma_interrupt_occurred(enc->dmatx) || dma_interrupt_occurred(enc->dmarx)) {
+        clear_dma_interrupt(enc->dmatx);
+        clear_dma_interrupt(enc->dmarx);
+    }
+
+    if (remaining_dma_transfer_count(enc->dmarx) == 0) {
+        set_gpio_pin_high(enc->cs);
+        ENC28J60_disable_dma(enc);
+        disable_ssi_interrupts(enc->ssi);
+        ipv4_deliver((struct ipv4hdr *) &(enc->rx_buf[15]));
+        ENC28J60_advance_rdptr(enc);
+        ENC28J60_enable_interrupts(enc);
+    }
 }
