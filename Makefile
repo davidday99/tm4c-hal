@@ -5,11 +5,14 @@ SRCS = $(wildcard src/*.c) \
 		$(wildcard src/*/*.c) \
 		$(wildcard src/*/*/*.c) \
 		$(wildcard asm/*.s)
+LIBSRCS = $(filter-out src/main.c src/startup.c src/interrupts.c, $(SRCS))
 OBJ = obj
 BIN = bin
 TESTS = $(wildcard test/*.c)
 TESTOBJS = $(addprefix $(OBJ)/, $(notdir $(TESTS:.c=.o)))
 OBJS = $(addprefix $(OBJ)/,$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
+LIB = lib
+LIBOBJS = $(addprefix $(LIB)/,$(filter-out %.c,$(notdir $(LIBSRCS:.s=.o))) $(filter-out %.s,$(notdir $(LIBSRCS:.c=.o))))
 
 # Target specific
 MCU = TM4C123GH6PM
@@ -25,7 +28,7 @@ DEBUGGER = arm-none-eabi-gdb
 
 # Compilation flags
 OPT_LEVEL += -Os
-CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 
+CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16
 CFLAGS += -mfloat-abi=softfp -MD -std=c99 -Wextra -Wall -Wno-missing-braces -Wno-builtin-declaration-mismatch
 CFLAGS += -nostartfiles -nostdlib $(OPT_LEVEL)
 LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler 
@@ -35,9 +38,9 @@ INC = -Iinc -Ilib/networking/network-stack/inc
 RM = rm -rf
 MKDIR = @mkdir -p $(@D) # creates folders if not present
 
-$(info )
-
 build: $(BIN)/$(PROJECT).bin
+
+library: $(LIBOBJS)
 
 test: $(BIN)/testrunner.bin
 	$(FLASHER) -S $(DEV) $(BIN)/testrunner.bin
@@ -62,6 +65,18 @@ $(OBJ)/%.o: src/*/*/%.c
 
 $(OBJ)/%.o: test/%.c
 	$(MKDIR)
+	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
+
+$(LIB)/%.o: asm/%.s
+	$(MKDIR)
+	$(CC) -o $@ $^ -c $(CFLAGS)
+
+$(LIB)/%.o: src/*/%.c
+	$(MKDIR)              
+	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
+
+$(LIB)/%.o: src/*/*/%.c
+	$(MKDIR)              
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 	
 # Generate project binary with debug symbols 
@@ -90,5 +105,6 @@ debug:
 clean:
 	-$(RM) $(OBJ)
 	-$(RM) $(BIN)
+	-$(RM) $(LIB)
 
 .PHONY: all clean
