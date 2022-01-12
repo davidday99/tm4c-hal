@@ -20,11 +20,8 @@ int test_dma_ssi_tx_rx() {
 
     uint8_t dest[5] = {0};
 
-    struct DMA_MODULE _dmatx;
-    struct DMA_MODULE *dmatx = &_dmatx;
-
-    struct DMA_MODULE _dmarx;
-    struct DMA_MODULE *dmarx = &_dmarx;
+    struct DMA_MODULE *dmatx = &DMA_CH13;
+    struct DMA_MODULE *dmarx = &DMA_CH12;
 
     struct SSI *ssi = &SSI_2;
 
@@ -35,8 +32,8 @@ int test_dma_ssi_tx_rx() {
     enable_ssi_tx_dma(ssi);
     enable_ssi(ssi);
 
-    init_dma(dmarx, DMACH12, 2);
-    init_dma(dmatx, DMACH13, 2);
+    init_dma(dmarx, 2);
+    init_dma(dmatx, 2);
 
 
     SSI2_IM_R |= 0x80;  // mask tx fifo interrupt

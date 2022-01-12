@@ -2,13 +2,12 @@ PROJECT = main
 
 # Directories
 SRCS = $(wildcard src/*.c) \
-	  $(wildcard lib/**/*.c) \
-      $(wildcard lib/**/**/*.c) \
-	  $(wildcard lib/networking/network-stack/src/*.c) \
-	  $(wildcard asm/*.s)
-TESTS = $(wildcard test/*.c)
+		$(wildcard src/*/*.c) \
+		$(wildcard src/*/*/*.c) \
+		$(wildcard asm/*.s)
 OBJ = obj
 BIN = bin
+TESTS = $(wildcard test/*.c)
 TESTOBJS = $(addprefix $(OBJ)/, $(notdir $(TESTS:.c=.o)))
 OBJS = $(addprefix $(OBJ)/,$(filter-out %.c,$(notdir $(SRCS:.s=.o))) $(filter-out %.s,$(notdir $(SRCS:.c=.o))))
 
@@ -36,6 +35,8 @@ INC = -Iinc -Ilib/networking/network-stack/inc
 RM = rm -rf
 MKDIR = @mkdir -p $(@D) # creates folders if not present
 
+$(info )
+
 build: $(BIN)/$(PROJECT).bin
 
 test: $(BIN)/testrunner.bin
@@ -51,30 +52,22 @@ $(OBJ)/%.o: src/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
-
-# TODO: clean up this and the following recipe...
-$(OBJ)/%.o: lib/**/%.c
+$(OBJ)/%.o: src/*/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
-$(OBJ)/%.o: lib/**/**/%.c
+$(OBJ)/%.o: src/*/*/%.c
 	$(MKDIR)              
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
 
 $(OBJ)/%.o: test/%.c
 	$(MKDIR)
 	$(CC) -o $@ $^ -c $(INC) $(CFLAGS)
-
-# Build network stack library and copy object files from submodule to top
-$(OBJ)/%.o: lib/networking/network-stack/src/%.c
-	$(MAKE) embedded -C lib/networking/network-stack
-	cp lib/networking/network-stack/eobj/*.o $(OBJ)
 	
 # Generate project binary with debug symbols 
 $(BIN)/$(PROJECT).elf: $(OBJS)
 	$(MKDIR)           
 	$(CC) -o $@ $^ $(LDFLAGS) $(CFLAGS)
-
 
 # Strip debug symbols
 $(BIN)/$(PROJECT).bin: $(BIN)/$(PROJECT).elf

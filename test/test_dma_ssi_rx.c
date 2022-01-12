@@ -32,7 +32,7 @@ int test_dma_ssi_rx() {
     enable_ssi_rx_dma(ssi);
     enable_ssi(ssi);
 
-    init_dma(dma, DMACH12, 2);
+    init_dma(&DMA_CH12, 2);
 
     SSI2_IM_R |= 0xC0;  // TODO: create functions for enabling/disabling peripheral interrupts
 
@@ -40,7 +40,7 @@ int test_dma_ssi_rx() {
 
     write_ssi(ssi, src, 5);
 
-    start_dma_transfer_peripheral_rx(dma, (uint8_t *) &SSI2_DR_R, dest + 4, 5);
+    start_dma_transfer_peripheral_rx(&DMA_CH12, (uint8_t *) &SSI2_DR_R, dest + 4, 5);
 
     Delay(10);
     

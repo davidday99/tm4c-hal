@@ -1,16 +1,7 @@
 #include <stdint.h>
-#include "ipv4.h"
-#include "ipv4_in.h"
-#include "udp.h"
-#include "udp_in.h"
-#include "enc.h"
-#include "ethernet.h"
-#include "socket.h"
 #include "string.h"
 #include "enc28j60.h"
 #include "tm4c123gh6pm.h"
-
-extern ENC *enc;
 
 static void Delay(uint32_t d) {
     uint32_t volatile delay = d * 80000;
@@ -18,7 +9,10 @@ static void Delay(uint32_t d) {
         delay--;
 }
 
-uint8_t ipv4_packet2[] = {
+int test_enc28j60_dma_rx() {
+    int success = 1;
+
+    uint8_t ipv4_packet[] = {
     0xDE,
     0xAD,
     0xBE,
@@ -65,10 +59,7 @@ uint8_t ipv4_packet2[] = {
     0xEF  // 2 bytes of data
 };
 
-int test_enc28j60_dma_rx() {
-    int success = 1;
-
-    enc_write_frame(enc, ipv4_packet2, sizeof(ipv4_packet2));
+    ENC28J60_write_frame_blocking(&ENC28J60, ipv4_packet, sizeof(ipv4_packet));
     ENC28J60_read_frame_dma(&ENC28J60);
 
     Delay(10);

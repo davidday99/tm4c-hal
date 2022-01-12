@@ -20,8 +20,7 @@ int test_dma_ssi_tx() {
 
     uint8_t dest[5] = {0};
 
-    struct DMA_MODULE _dma;
-    struct DMA_MODULE *dma = &_dma;
+    struct DMA_MODULE *dma = &DMA_CH13;
 
     struct SSI *ssi = &SSI_2;
 
@@ -32,7 +31,7 @@ int test_dma_ssi_tx() {
     enable_ssi_tx_dma(ssi);
     enable_ssi(ssi);
 
-    init_dma(dma, DMACH13, 2);
+    init_dma(dma, 2);
 
     SSI2_IM_R |= 0xC0;
 

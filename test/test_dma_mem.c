@@ -13,11 +13,8 @@ int test_dma_mem() {
         
     uint8_t dest[100] = {0};
 
-    struct DMA_MODULE _dma;
-    struct DMA_MODULE *dma = &_dma;
-
-    init_dma(dma, DMACH30, 0);
-    start_dma_transfer_mem(dma, src + 99, dest + 99, 100);
+    init_dma(&DMA_CH30, 0);
+    start_dma_transfer_mem(&DMA_CH30, src + 99, dest + 99, 100);
 
     while (dma_busy()) {
         static int x;  // initialize this to allow for a breakpoint inside here
