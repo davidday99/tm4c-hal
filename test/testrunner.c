@@ -15,8 +15,11 @@ int test_dummy() {
     return 1;
 }
 
+int test_timer();
+
 int (*test_cases[])(void) = {
-    test_dummy
+    test_dummy,
+    test_timer
 };
 
 LCD _lcd;
@@ -39,9 +42,9 @@ int main(void){
         int result = test_cases[i]();
         passing += result;
         if (result)
-            lcd_write(lcd, "Test %d passed.\n");
+            lcd_write(lcd, "Test %d passed.\n", i);
         else
-            lcd_write(lcd, "TEST %d FAILED!\n");
+            lcd_write(lcd, "TEST %d FAILED!\n", i);
     }
     lcd_write(lcd, "Done.\n");
     lcd_write(lcd, "%d/%d passed.\n", passing, test_count);
