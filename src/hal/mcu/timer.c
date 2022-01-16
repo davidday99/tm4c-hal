@@ -214,6 +214,14 @@ void disable_GPTM_timeout_interrupt(enum TIMER_MODULE timer, enum TIMER_SUBMODUL
     }
 }
 
+void clear_GPTM_timeout_interrupt(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub) {
+    if (sub == TIMER_A) {
+        *(TIMER[timer].GPTMICR) |= 1;
+    } else if (sub == TIMER_B) {
+        *(TIMER[timer].GPTMICR) |= 0x100;
+    }
+}
+
 uint16_t get_GPTM_RIS(enum TIMER_MODULE timer) {
     return *(TIMER[timer].GPTMRIS) & 0xFFF;
 }

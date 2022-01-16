@@ -15,7 +15,8 @@ void set_GPTM_count_direction(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub,
 void enable_GPTM_interrupts(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub);
 void disable_GPTM_interrupts(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub);
 void enable_GPTM_timeout_interrupt(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub);
-void disable_GPTM_timeout_interrupt(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub) ;
+void disable_GPTM_timeout_interrupt(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub);
+void clear_GPTM_timeout_interrupt(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub);
 uint16_t get_GPTM_RIS(enum TIMER_MODULE timer);
 uint32_t get_GPTM_value(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub);
 
