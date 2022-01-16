@@ -4,22 +4,6 @@
 #include <stdint.h>
 #include "common.h"
 
-enum TIMER_SUBMODULE {
-    TIMER_A,
-    TIMER_B
-};
-
-enum TIMER_MODE {
-    TIMER_MODE_ONE_SHOT,
-    TIMER_MODE_PERIODIC,
-    TIMER_MODE_CAPTURE
-};
-
-enum TIMER_COUNT_DIR {
-    TIMER_COUNT_DIR_UP,
-    TIMER_COUNT_DIR_DOWN
-};
-
 void init_GPTM(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub, uint8_t wide, enum TIMER_MODE mode);
 void set_GPTM_start_value(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub, uint32_t start);
 void start_GPTM(enum TIMER_MODULE timer, enum TIMER_SUBMODULE sub);
