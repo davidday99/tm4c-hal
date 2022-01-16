@@ -25,3 +25,7 @@ void SPI1_ISR(void) {
 void Timer0A_ISR(void) {
     TIMER0_ICR_R = 0;
 }
+
+void Timer1A_ISR(void) {
+    TIMER0_ICR_R = 0;
+}
