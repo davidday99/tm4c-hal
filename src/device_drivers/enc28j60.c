@@ -311,14 +311,12 @@ uint16_t ENC28J60_read_frame_dma(struct ENC28J60 *enc28j60) {
     uint16_t nf = (next_frame[0] & 0xFF) | (next_frame[1] << 8);
     enc28j60->nf_ptr = nf;
 
-    lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
-    lcd_write(&lcd, "t: %d\n", len);
+    // lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
+    // lcd_write(&lcd, "t: %d\n", len);
 
     /* If we ever enter here an error has occurred. */
-    static int x;
     if (len > ENC28J60_MAX_FRAME_LEN) {
         ENC28J60_disable_receive(enc28j60);
-        x++;
         return len;
     }
 
