@@ -33,6 +33,10 @@ void lcd_write(LCD *lcd, char *s, ...) {
     }
 }
 
+void lcd_clear(LCD *lcd) {
+    ST7735_FillScreen(lcd->model, ST7735_BLACK);
+}
+
 void lcd_backspace(LCD *lcd, uint32_t count) {
     while (count--)
         lcd_write_char(lcd, BACKSPACE);
