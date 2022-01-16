@@ -3,6 +3,7 @@
 #include "ssi_module.h"
 #include "gpio_module.h"
 #include "dma_module.h"
+#include "timer_module.h"
 #include "tm4c123gh6pm.h"
 #include "lcd.h"
 
@@ -124,6 +125,7 @@ struct ENC28J60 ENC28J60 = {
     &DMA_CH10,
     &PORTB_PIN0,
     &PORTB_PIN1,
+    &TIMER0A,
     0,
     0,
     0
@@ -154,6 +156,7 @@ static uint8_t init_success(struct ENC28J60 *enc28j60);
 uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     enc28j60->rx_buf = enc28j60_rx_buffer;
     enc28j60->tx_buf = enc28j60_tx_buffer;
+    enc28j60->nf_ptr = 0;
 
     init_peripherals(enc28j60);
     system_reset(enc28j60);
@@ -168,6 +171,7 @@ uint8_t ENC28J60_init(struct ENC28J60 *enc28j60) {
     init_phy_registers(enc28j60);
 
     bit_field_clear(enc28j60, ECON1, 0xC0);
+    start_timer(enc28j60->timeout_clk);
 
     return init_success(enc28j60);
 }
@@ -200,6 +204,10 @@ void ENC28J60_disable_interrupts(struct ENC28J60 *enc28j60) {
 
 void ENC28J60_enable_interrupts(struct ENC28J60 *enc28j60) {
     bit_field_set(enc28j60, EIE, 0x80);
+}
+
+uint8_t ENC28J60_get_interrupt_requests(struct ENC28J60 *enc28j60) {
+    return read_control_register(enc28j60, EIR, 1);
 }
 
 void ENC28J60_decrement_packet_count(struct ENC28J60 *enc28j60) {
@@ -302,14 +310,16 @@ uint16_t ENC28J60_read_frame_dma(struct ENC28J60 *enc28j60) {
     uint16_t nf = (next_frame[0] & 0xFF) | (next_frame[1] << 8);
     enc28j60->nf_ptr = nf;
 
+    lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
+    lcd_write(&lcd, "t: %d\n", len);
+
     /* If we ever enter here an error has occurred. */
+    static int x;
     if (len > ENC28J60_MAX_FRAME_LEN) {
         ENC28J60_disable_receive(enc28j60);
+        x++;
         return len;
     }
-
-    // lcd_write(&lcd, "next frame: 0x%x\n", next_frame[0] | (next_frame[1] << 8));
-    // lcd_write(&lcd, "t: %d\n", len);
 
     uint8_t read_buf_cmd = RBM_OPCODE | RBM_ARG0;
     enc28j60->tx_buf[0] = read_buf_cmd;
@@ -521,6 +531,11 @@ static void init_peripherals(struct ENC28J60 *enc28j60) {
 
     init_dma(enc28j60->dmatx, 1);
     init_dma(enc28j60->dmarx, 1);
+
+    init_timer(enc28j60->timeout_clk, 1);
+    set_timer_32_bit_starting_value(enc28j60->timeout_clk, 400000000);
+    enable_timer_interrupts(enc28j60->timeout_clk);
+    enable_timer_timeout_interupt(enc28j60->timeout_clk);
 
     init_gpio_port_clock(enc28j60->cs);
     disable_gpio_pin_alternate_function(enc28j60->cs);
