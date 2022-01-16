@@ -53,10 +53,14 @@ void disable_timer_interrupts(struct TIMER *timer) {
     disable_GPTM_interrupts(timer->module, timer->submodule);
 }
 
-void enable_timer_timeout_interupt(struct TIMER *timer) {
+void enable_timer_timeout_interrupt(struct TIMER *timer) {
     enable_GPTM_timeout_interrupt(timer->module, timer->submodule);
 }
 
-void disable_timer_timeout_interupt(struct TIMER *timer) {
+void disable_timer_timeout_interrupt(struct TIMER *timer) {
     disable_GPTM_timeout_interrupt(timer->module, timer->submodule);
+}
+
+void clear_timer_timeout_interrupt(struct TIMER *timer) {
+    clear_GPTM_timeout_interrupt(timer->module, timer->submodule);
 }

@@ -42,7 +42,8 @@ void start_timer(struct TIMER *timer);
 void stop_timer(struct TIMER *timer);
 void enable_timer_interrupts(struct TIMER *timer);
 void disable_timer_interrupts(struct TIMER *timer);
-void enable_timer_timeout_interupt(struct TIMER *timer);
-void disable_timer_timeout_interupt(struct TIMER *timer);
+void enable_timer_timeout_interrupt(struct TIMER *timer);
+void disable_timer_timeout_interrupt(struct TIMER *timer);
+void clear_timer_timeout_interrupt(struct TIMER *timer);
 
 #endif /* _TIMER_MODULE_H_ */
