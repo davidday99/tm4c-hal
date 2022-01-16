@@ -132,16 +132,16 @@ void enable_SSI_NVI(enum SSI_MODULE module) {
 void disable_SSI_NVI(enum SSI_MODULE module) {
     switch (module) {
         case SSI0:
-            NVIC_EN0_R &= ~(1 << 7);
+            NVIC_DIS0_R |= 1 << 7;
             break;
         case SSI1:
-            NVIC_EN1_R &= ~(1 << 2);
+            NVIC_DIS1_R |= 1 << 2;
             break;
         case SSI2:
-            NVIC_EN1_R &= ~(1 << 25);
+            NVIC_DIS1_R |= 1 << 25;
             break;
         case SSI3:
-            NVIC_EN1_R &= ~(1 << 26);
+            NVIC_DIS1_R |= 1 << 26;
             break;
         default:
             break;
