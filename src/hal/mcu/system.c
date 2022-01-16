@@ -36,6 +36,18 @@ void set_RCGCSSI(enum SSI_MODULE module, uint8_t value) {
     delay();
 }
 
+void set_RCGCTIMER(enum TIMER_MODULE module, uint8_t value) {
+    SYSCTL_RCGCTIMER_R = (SYSCTL_RCGCTIMER_R & ~(1 << module)) |
+                            (value << module);
+    delay();
+}
+
+void set_RCGCWTIMER(enum TIMER_MODULE module, uint8_t value) {
+    SYSCTL_RCGCWTIMER_R = (SYSCTL_RCGCWTIMER_R & ~(1 << module)) |
+                            (value << module);
+    delay();
+}
+
 void set_RCGCDMA(void) {
     SYSCTL_RCGCDMA_R |= 1;
     delay();

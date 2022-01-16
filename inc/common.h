@@ -28,6 +28,21 @@ enum SSI_MODULE {
     SSI3,
 };
 
+enum TIMER_MODULE {
+    TIMER0,
+    TIMER1,
+    TIMER2,
+    TIMER3,
+    TIMER4,
+    TIMER5,
+    WTIMER0,
+    WTIMER1,
+    WTIMER2,
+    WTIMER3,
+    WTIMER4,
+    WTIMER5,
+};
+
 enum DMA_CHANNEL {
     DMACH0,
     DMACH1,
