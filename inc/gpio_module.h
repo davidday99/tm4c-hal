@@ -82,7 +82,7 @@ void enable_gpio_edge_interrupt(struct GPIO_PIN *gpio_pin);
 void enable_gpio_level_interrupt(struct GPIO_PIN *gpio_pin);
 void mask_gpio_interrupt(struct GPIO_PIN *gpio_pin);
 void unmask_gpio_interrupt(struct GPIO_PIN *gpio_pin);
-uint8_t get_gpio_interrupt_mask(enum PORT port);
+uint8_t get_gpio_masked_interrupt_status(enum PORT port);
 uint8_t get_gpio_raw_interrupt_mask(enum PORT port);
 void clear_gpio_interrupt(struct GPIO_PIN *gpio_pin);
 void init_gpio_both_edges_interrupt(struct GPIO_PIN *gpio_pin);

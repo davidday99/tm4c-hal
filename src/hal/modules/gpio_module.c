@@ -159,7 +159,7 @@ void unmask_gpio_interrupt(struct GPIO_PIN *gpio_pin) {
     set_gpio_pin_IM(gpio_pin->port, gpio_pin->pin, 1);
 }
 
-uint8_t get_gpio_interrupt_mask(enum PORT port) {
+uint8_t get_gpio_masked_interrupt_status(enum PORT port) {
     return get_gpio_port_MIS(port);
 }
 
