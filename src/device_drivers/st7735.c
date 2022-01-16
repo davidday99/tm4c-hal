@@ -729,7 +729,9 @@ void ST7735_DrawFastHLine(struct ST7735 *st7735, uint8_t x, uint8_t y, uint8_t w
 // Input: color 16-bit color, which can be produced by ST7735_Color565()
 // Output: none
 void ST7735_FillScreen(struct ST7735 *st7735, uint16_t color) {
-  ST7735_FillRect(st7735, 0, 0, ST7735_TFTWIDTH, ST7735_TFTHEIGHT, color);
+    ST7735_FillRect(st7735, 0, 0, ST7735_TFTWIDTH, ST7735_TFTHEIGHT, color);
+    st7735->x_pos = 0;
+    st7735->y_pos = 0;
 }
 
 //------------ST7735_FillRect------------
