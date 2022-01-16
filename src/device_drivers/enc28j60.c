@@ -118,6 +118,7 @@
 #define PHLCON 0x14
 
 #define ENC28J60_MAX_FRAME_LEN 1518
+#define ENC28J60_TIMEOUT 800000000  // This corresponds to 10 seconds when running at 80 MHz.
 
 struct ENC28J60 ENC28J60 = {
     &SSI_1,
@@ -533,9 +534,9 @@ static void init_peripherals(struct ENC28J60 *enc28j60) {
     init_dma(enc28j60->dmarx, 1);
 
     init_timer(enc28j60->timeout_clk, 1);
-    set_timer_32_bit_starting_value(enc28j60->timeout_clk, 400000000);
+    set_timer_32_bit_starting_value(enc28j60->timeout_clk, ENC28J60_TIMEOUT);
     enable_timer_interrupts(enc28j60->timeout_clk);
-    enable_timer_timeout_interupt(enc28j60->timeout_clk);
+    enable_timer_timeout_interrupt(enc28j60->timeout_clk);
 
     init_gpio_port_clock(enc28j60->cs);
     disable_gpio_pin_alternate_function(enc28j60->cs);
