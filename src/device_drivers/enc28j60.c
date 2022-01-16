@@ -611,13 +611,13 @@ static void init_mac_registers(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 3
     bit_field_set(enc28j60, ECON1, 3);
 
-    // init MAC address to A0-CD-DF-01-23-45, 0 in LSB if first byte indicates unicast address
-    write_control_register(enc28j60, MAADR1, 0xB4);
-    write_control_register(enc28j60, MAADR2, 0x2E);
-    write_control_register(enc28j60, MAADR3, 0x99);
-    write_control_register(enc28j60, MAADR4, 0xEC);
-    write_control_register(enc28j60, MAADR5, 0x02);
-    write_control_register(enc28j60, MAADR6, 0xC5);
+    // init MAC address to A0-CD-EF-01-23-45, 0 in LSB if first byte indicates unicast address
+    write_control_register(enc28j60, MAADR1, 0xA0);
+    write_control_register(enc28j60, MAADR2, 0xCD);
+    write_control_register(enc28j60, MAADR3, 0xEF);
+    write_control_register(enc28j60, MAADR4, 0x01);
+    write_control_register(enc28j60, MAADR5, 0x23);
+    write_control_register(enc28j60, MAADR6, 0x45);
 
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
@@ -662,12 +662,12 @@ static uint8_t init_success(struct ENC28J60 *enc28j60) {
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 3
     bit_field_set(enc28j60, ECON1, 3);   
 
-    success &= read_control_register(enc28j60, MAADR1, 0) == 0xB4;
-    success &= read_control_register(enc28j60, MAADR2, 0) == 0x2E;
-    success &= read_control_register(enc28j60, MAADR3, 0) == 0x99;
-    success &= read_control_register(enc28j60, MAADR4, 0) == 0xEC;
-    success &= read_control_register(enc28j60, MAADR5, 0) == 0x02;
-    success &= read_control_register(enc28j60, MAADR6, 0) == 0xC5;
+    success &= read_control_register(enc28j60, MAADR1, 0) == 0xA0;
+    success &= read_control_register(enc28j60, MAADR2, 0) == 0xCD;
+    success &= read_control_register(enc28j60, MAADR3, 0) == 0xEF;
+    success &= read_control_register(enc28j60, MAADR4, 0) == 0x01;
+    success &= read_control_register(enc28j60, MAADR5, 0) == 0x23;
+    success &= read_control_register(enc28j60, MAADR6, 0) == 0x45;
 
     success &= read_phy_register(enc28j60, PHCON1) == 0x0100;
 
