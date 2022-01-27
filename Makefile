@@ -30,7 +30,7 @@ DEBUGGER = arm-none-eabi-gdb
 OPT_LEVEL += -Os
 CFLAGS = -ggdb3 -mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16
 CFLAGS += -mfloat-abi=softfp -MD -std=c99 -Wextra -Wall -Wno-missing-braces -Wno-builtin-declaration-mismatch
-CFLAGS += -nostartfiles -nostdlib $(OPT_LEVEL)
+CFLAGS += -ffreestanding -nostartfiles -nostdlib $(OPT_LEVEL)
 LDFLAGS = -T $(LD_SCRIPT) -e Reset_Handler 
 INC = -Iinc -Ilib/networking/network-stack/inc
 
