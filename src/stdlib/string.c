@@ -25,3 +25,18 @@ void strcpy(char *dest, char *src) {
     while ((*dest++ = *src++) != '\0')
         ;
 }
+
+int32_t strcmp(const char *s1, const char *s2) {
+    for (; *s1 == *s2; s1++, s2++) {
+        if (*s1 == '\0')
+            return 0;
+    }
+    return *s1 - *s2;
+}
+
+uint32_t strlen(const char *s) {
+    uint32_t len = 0;
+    while (*s != '\0')
+        len++;
+    return len;
+}
