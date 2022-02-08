@@ -36,7 +36,7 @@ int32_t strcmp(const char *s1, const char *s2) {
 
 uint32_t strlen(const char *s) {
     uint32_t len = 0;
-    while (*s != '\0')
+    while (*s++ != '\0')
         len++;
     return len;
 }
