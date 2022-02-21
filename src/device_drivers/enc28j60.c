@@ -581,7 +581,7 @@ static void init_receive_filters(struct ENC28J60 *enc28j60) {
     uint8_t bank = read_control_register(enc28j60, ECON1, 1) & 3;
     bit_field_clear(enc28j60, ECON1, 3); // switch to bank 1
     bit_field_set(enc28j60, ECON1, 1);
-    write_control_register(enc28j60, ERXFCON, 0);  // enable promiscuous mode (receive all packets)
+    write_control_register(enc28j60, ERXFCON, 0x81);  // accept only unicast and broadcast frames
     bit_field_clear(enc28j60, ECON1, 3);  // restore bank to previous value
     bit_field_set(enc28j60, ECON1, bank);
 }
