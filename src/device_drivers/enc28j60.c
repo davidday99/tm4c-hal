@@ -118,7 +118,7 @@
 #define PHLCON 0x14
 
 #define ENC28J60_MAX_FRAME_LEN 1518
-#define ENC28J60_TIMEOUT 800000000  // This corresponds to 10 seconds when running at 80 MHz.
+#define ENC28J60_TIMEOUT 0xFFFFFFFF  // This corresponds to ~54 seconds when running at 80 MHz.
 
 struct ENC28J60 ENC28J60 = {
     &SSI_1,
